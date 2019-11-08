@@ -1,0 +1,46 @@
+whiteListedAuthUrls: /api/public/**
+jwtTokenApiMatchUrls: /api/auth/**,/api/article/**,/api/board/**,/api/user/**
+tokenMatchUrls: /api/auth/token/*
+
+articlesLimit: 50
+guestName: guest
+
+tokenExpirationMinutes: 600
+tokenIssuer: ${TOKEN_ISSUER:workingbit.com}
+tokenSecret: ${TOKEN_SECRET:S2{Ux(QSDpuF(qh_E{|T3W}w9{^rWd*tQf6()eV+}
+
+headers: Access-Control-Allow-Origin,Origin,Content-Type,Accept,Authorization,WWW-Authenticate
+methods: GET,POST,OPTIONS,PATCH,PUT
+exposedHeaders: WWW-Authenticate
+originUrl: ${ORIGIN_URL:https://shashki.online}
+
+appclients:
+  clients:
+    - username: actuator
+      password: "actuator"
+      roles: SYSTEM
+
+spring:
+  data:
+    mongodb:
+      database: shashki
+
+server:
+  error:
+    include-stacktrace: on_trace_param
+
+trace: false
+
+---
+
+# dev
+
+spring:
+  profiles:
+    dev
+
+logging:
+  level:
+    org.springframework: trace
+
+originUrl: http://localhost:4200

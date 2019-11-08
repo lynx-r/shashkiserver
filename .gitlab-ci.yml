@@ -1,0 +1,32 @@
+stages:
+  - package
+  - deploy
+
+package:
+  stage: package
+  tags:
+    - shashkiback
+  only:
+    - package
+    - production
+  before_script:
+    - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+  script:
+    - ./gradlew clean build -x test
+    - ./gradlew :spring-servers:discovery-server:dockerPushLatest
+    - ./gradlew :spring-servers:config-server:dockerPushLatest
+    - ./gradlew :spring-servers:gateway-server:dockerPushLatest
+    - ./gradlew :spring-servers:admin-server:dockerPushLatest
+    - ./gradlew :shashki-service:board-service:dockerPushLatest
+    - ./gradlew :shashki-service:article-service:dockerPushLatest
+    - ./gradlew :shashki-service:edit-service:dockerPushLatest
+
+deploy:
+  stage: deploy
+  tags:
+    - shashkiback
+  only:
+    - deploy
+    - production
+  script:
+    - ./gradlew :dockerComposeUp

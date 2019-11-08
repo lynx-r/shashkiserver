@@ -1,0 +1,16 @@
+{
+  "article": {
+    "createdAt": "2019-10-19T13:40:27.003Z",
+    "articleStatus": "DRAFT",
+    "type": "Article",
+    "title": "Новая статья",
+    "humanReadableUrl": "Новая статья"
+  },
+  "boardBoxRequest": {
+    "black": false,
+    "rules": "RUSSIAN",
+    "fillBoard": true,
+    "type": "CreateBoardPayload"
+  },
+  "type": "CreateArticlePayload"
+}

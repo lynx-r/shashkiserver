@@ -1,0 +1,71 @@
+version: '3'
+
+services:
+  discoveryserver-shashki:
+    image: 'workingbit/online.shashki.discovery-server'
+    container_name: discoveryserver-shashki
+    env_file:
+      - ${HOME}/Docker/shashki.online-shared.env
+  configserver-shashki:
+    image: 'workingbit/online.shashki.config-server'
+    container_name: configserver-shashki
+    env_file:
+      - ${HOME}/Docker/shashki.online-shared.env
+  gatewayserver-shashki:
+    image: 'workingbit/online.shashki.gateway-server'
+    container_name: gatewayserver-shashki
+    ports:
+      - "5555:5555"
+    env_file:
+      - ${HOME}/Docker/shashki.online-shared.env
+  adminserver-shashki:
+    image: 'workingbit/online.shashki.admin-server'
+    container_name: adminserver-shashki
+    ports:
+      - "9999:9999"
+    env_file:
+      - ${HOME}/Docker/shashki.online-shared.env
+
+  boardservice-shashki:
+    image: 'workingbit/online.shashki.board-service'
+    container_name: boardservice-shashki
+    env_file:
+      - ${HOME}/Docker/shashki.online-shared.env
+  articleservice-shashki:
+    image: 'workingbit/online.shashki.article-service'
+    container_name: articleservice-shashki
+    env_file:
+      - ${HOME}/Docker/shashki.online-shared.env
+  editservice-shashki:
+    image: 'workingbit/online.shashki.edit-service'
+    container_name: editservice-shashki
+    env_file:
+      - ${HOME}/Docker/shashki.online-shared.env
+
+  zipkin-shashki:
+    image: 'openzipkin/zipkin'
+    container_name: zipkin-shashki
+
+  zipkin-ui-shashki:
+    image: openzipkin/zipkin-ui
+    container_name: zipkin-ui-shashki
+    environment:
+      # Change this if connecting to a different zipkin server
+      - ZIPKIN_BASE_URL=http://zipkin-shashki:9411
+    ports:
+      - "9410:80"
+    depends_on:
+      - zipkin-shashki
+
+  mongo-shashki:
+    image: 'mongo'
+    container_name: mongo-shashki
+    ports:
+      - "27017:27017"
+    env_file:
+      - ${HOME}/Docker/shashki.online-shared.env
+    volumes:
+      - 'mongo-shashki:/data/db'
+
+volumes:
+  mongo-shashki:
