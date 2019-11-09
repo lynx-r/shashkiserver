@@ -53,11 +53,6 @@ public class GameNotationService {
     return new GameNotationService(EnumRule.RUSSIAN, Player.WHITE);
   }
 
-  public GameNotation cellTouch(String notation) {
-    BoardCell cell = gameBoardService.getCell(notation);
-    return cellTouch(cell, false);
-  }
-
   public GameNotation cellTouch(BoardCell cell, boolean skipAddMovesToNotation) {
     if (gameNotation.getWinner() != null) {
       return gameNotation;
@@ -151,16 +146,16 @@ public class GameNotationService {
   }
 
   private void addStrokeWhenWhitePlayerBeats(boolean existsNextEatMove) {
-    if (gameNotation.getPlayer().isWhite()) {
-      LinkedList<Stroke> strokes = gameNotation.getStrokes();
-      if (!strokes.isEmpty()) {
-        if (!gameNotation.isWhiteFirstEat()) {
-          addStrokeWhenWhitePlayer();
-          gameNotation.setWhiteFirstEat(existsNextEatMove);
-        } else if (!existsNextEatMove) {
-          gameNotation.setWhiteFirstEat(false);
-        }
-      } else {
+    LinkedList<Stroke> strokes = gameNotation.getStrokes();
+    if (!strokes.isEmpty()) {
+      if (!gameNotation.isWhiteFirstEat()) {
+        addStrokeWhenWhitePlayer();
+        gameNotation.setWhiteFirstEat(existsNextEatMove);
+      } else if (!existsNextEatMove) {
+        gameNotation.setWhiteFirstEat(false);
+      }
+    } else {
+      if (gameNotation.getPlayer().isWhite()) {
         Stroke s = new Stroke(1);
         s.setSelected(true);
         strokes.add(s);
@@ -201,7 +196,9 @@ public class GameNotationService {
       if (!blackMoves.isEmpty()) {
         blackMoves.get(blackMoves.size() - 1).setSelected(false);
       }
-      whiteMoves.get(whiteMoves.size() - 1).setSelected(false);
+      if (!whiteMoves.isEmpty()) {
+        whiteMoves.get(whiteMoves.size() - 1).setSelected(false);
+      }
       blackMoves.add(m);
     }
   }

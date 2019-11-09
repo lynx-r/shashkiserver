@@ -29,10 +29,10 @@ public class GameNotationServiceTest {
 
     var gmService = GameNotationService.forRulesRussianCheckers();
 
-    gmService.cellTouch("c3");
-    gmService.cellTouch("b4");
-    gmService.cellTouch("b6");
-    gmService.cellTouch("a5");
+//    gmService.cellTouch("c3");
+//    gmService.cellTouch("b4");
+//    gmService.cellTouch("b6");
+//    gmService.cellTouch("a5");
 
     System.out.println(gmService.getGameNotation().flattenStrokes());
   }
