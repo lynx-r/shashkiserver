@@ -1,7 +1,7 @@
 /*
  * © Copyright
  *
- * PrivateArticleRepo.java is part of shashkiserver.
+ * AuthArticlesContainerRepo.java is part of shashkiserver.
  *
  * shashkiserver is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 
 package com.workingbit.shashkiapp.repo;
 
-import com.workingbit.shashkiapp.domain.Article;
+import com.workingbit.shashkiapp.domain.ArticlesContainer;
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
@@ -30,22 +30,24 @@ import reactor.core.publisher.Mono;
 /**
  * Created by Aleksey Popryadukhin on 27/08/2018.
  */
-public interface PrivateArticleRepo extends ReactiveMongoRepository<Article, ObjectId> {
+public interface AuthArticlesContainerRepo extends ReactiveMongoRepository<ArticlesContainer, ObjectId> {
 
-  Mono<Article> findByAuthorIdAndHumanReadableUrl(ObjectId authorId, String hru);
+  Mono<Boolean> existsByHumanReadableUrl(String hru);
 
-  Mono<Article> findByAuthorIdAndId(ObjectId articleId, ObjectId authorId);
+  Mono<ArticlesContainer> findByAuthorIdAndHumanReadableUrl(ObjectId authorId, String hru);
+
+  Mono<ArticlesContainer> findByAuthorIdAndId(ObjectId articleId, ObjectId authorId);
 
   Mono<Long> countByAuthorId(ObjectId authorId);
 
-  Flux<Article> findAllByAuthorId(ObjectId authorId, Pageable pageable);
+  Flux<ArticlesContainer> findAllByAuthorId(ObjectId authorId, Pageable pageable);
 
-  default Flux<Article> findAllByAuthorIdAndContains(ObjectId authorId, String content, Pageable pageable) {
+  default Flux<ArticlesContainer> findAllByAuthorIdAndContains(ObjectId authorId, String content, Pageable pageable) {
     String contentRegex = "(?i).*" + content + ".*";
     return findAllByAuthorIdAndIntroMatchesRegexOrAuthorIdAndTitleMatchesRegex(authorId, contentRegex, authorId, contentRegex, pageable);
   }
 
-  Flux<Article> findAllByAuthorIdAndIntroMatchesRegexOrAuthorIdAndTitleMatchesRegex(ObjectId authorId, String content, ObjectId authorId2, String intro, Pageable pageable);
+  Flux<ArticlesContainer> findAllByAuthorIdAndIntroMatchesRegexOrAuthorIdAndTitleMatchesRegex(ObjectId authorId, String content, ObjectId authorId2, String intro, Pageable pageable);
 
   default Mono<Long> countAllByAuthorIdAndContains(ObjectId authorId, String content) {
     String contentRegex = "(?i).*" + content + ".*";

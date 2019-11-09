@@ -1,6 +1,3 @@
-
-
-
 /*
  * © Copyright
  *
@@ -28,24 +25,9 @@ package com.workingbit.shashkiapp.domain;
  */
 public enum EnumArticleStatus {
 
-  /**
-   * New board not viewed by moderator
-   */
   DRAFT,
-
-  /**
-   * Article was removed
-   */
   REMOVED,
-
-  /**
-   * Article published
-   */
   PUBLISHED,
-
-  /**
-   * Народное достояние
-   */
-  LEGACY,
+  NEW,
   ;
 }

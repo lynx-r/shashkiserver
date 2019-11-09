@@ -22,13 +22,14 @@ package com.workingbit.shashkiapp.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.workingbit.shashkiapp.domain.Article;
+import com.workingbit.shashkiapp.domain.ArticlesContainer;
 import com.workingbit.shashkiapp.domain.ArticlesResponse;
 import com.workingbit.shashkiapp.domain.BoardCell;
 import com.workingbit.shashkiapp.service.ArticleService;
+import com.workingbit.shashkiapp.service.ArticlesContainerService;
 import org.bson.types.ObjectId;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -37,27 +38,42 @@ import reactor.core.publisher.Mono;
 public class PrivateArticleController {
 
   private final ArticleService articleService;
+  private final ArticlesContainerService articlesContainerService;
 
-  public PrivateArticleController(ArticleService articleService) {
+  public PrivateArticleController(ArticleService articleService,
+                                  ArticlesContainerService articlesContainerService) {
     this.articleService = articleService;
+    this.articlesContainerService = articlesContainerService;
   }
 
   @PostMapping
   @PreAuthorize("hasRole('USER')")
-  public Mono<ResponseEntity<Article>> createArticle(
-      @RequestBody Article article,
-      Authentication authentication
+  public Mono<ResponseEntity<ArticlesContainer>> authCreateArticlesContainer(
+      @PathVariable ObjectId userId,
+      @RequestBody ArticlesContainer container
   ) {
-    return articleService
-        .privateCreateArticle(article, authentication)
+    return articlesContainerService
+        .authCreateArticlesContainer(userId, container)
         .map(ResponseEntity::ok);
   }
 
-  @PutMapping
+  @PutMapping("{containerId}/add")
   @PreAuthorize("hasRole('USER')")
-  public Mono<ResponseEntity<Article>> saveArticle(@PathVariable ObjectId userId, @RequestBody Article article) {
+  public Mono<ResponseEntity<Article>> authAddArticleToContainer(
+      @PathVariable ObjectId userId,
+      @PathVariable ObjectId containerId,
+      @RequestBody Article article
+  ) {
+    return articlesContainerService
+        .authAddArticleToContainer(containerId, userId, article)
+        .map(ResponseEntity::ok);
+  }
+
+  @PutMapping("item")
+  @PreAuthorize("hasRole('USER')")
+  public Mono<ResponseEntity<Article>> saveArticle(@RequestBody Article article) {
     return articleService
-        .privateSaveArticle(userId, article)
+        .authSaveArticle(article)
         .map(ResponseEntity::ok);
   }
 
@@ -71,23 +87,22 @@ public class PrivateArticleController {
       @RequestParam(value = "sortDirection", required = false, defaultValue = "desc") String sortDirection,
       @RequestParam(value = "contains", required = false) String contains
   ) {
-    return articleService.privateFindAllByAuthor(userId, page, pageSize, sort, sortDirection, contains);
+    return articlesContainerService.authFindAllByAuthor(userId, page, pageSize, sort, sortDirection, contains);
   }
 
   @GetMapping("{hru}")
-  public Mono<ResponseEntity<Article>> getArticleByHruAndAuthorId(@PathVariable ObjectId userId, @PathVariable String hru) {
-    return articleService
-        .privateFindArticleByHruAndAuthorId(userId, hru)
+  public Mono<ResponseEntity<ArticlesContainer>> getArticleByHruAndAuthorId(@PathVariable ObjectId userId, @PathVariable String hru) {
+    return articlesContainerService
+        .authFindArticleByHruAndAuthorId(userId, hru)
         .map(ResponseEntity::ok);
   }
 
   @PutMapping("{articleId}/board")
   public Mono<ResponseEntity<JsonNode>> boardCellTouched(
-      @PathVariable ObjectId userId,
       @PathVariable ObjectId articleId,
       @RequestBody BoardCell boardCell
   ) {
-    return articleService.privateBoardCellTouch(boardCell, userId, articleId)
+    return articleService.privateBoardCellTouch(boardCell, articleId)
         .map(ResponseEntity::ok);
   }
 

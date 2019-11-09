@@ -20,9 +20,9 @@
 
 package com.workingbit.shashkiapp.controller;
 
-import com.workingbit.shashkiapp.domain.Article;
+import com.workingbit.shashkiapp.domain.ArticlesContainer;
 import com.workingbit.shashkiapp.domain.ArticlesResponse;
-import com.workingbit.shashkiapp.service.ArticleService;
+import com.workingbit.shashkiapp.service.ArticlesContainerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -32,10 +32,10 @@ import reactor.core.publisher.Mono;
 @RequestMapping("api/article")
 public class ArticleController {
 
-  private final ArticleService articleService;
+  private final ArticlesContainerService articlesContainerService;
 
-  public ArticleController(ArticleService articleService) {
-    this.articleService = articleService;
+  public ArticleController(ArticlesContainerService articlesContainerService) {
+    this.articlesContainerService = articlesContainerService;
   }
 
   @GetMapping("list")
@@ -47,12 +47,12 @@ public class ArticleController {
       @RequestParam(value = "sortDirection", required = false, defaultValue = "desc") String sortDirection,
       @RequestParam(value = "contains", required = false) String contains
   ) {
-    return articleService.findAllPublicArticles(page, pageSize, sort, sortDirection, contains);
+    return articlesContainerService.findAllPublicArticles(page, pageSize, sort, sortDirection, contains);
   }
 
   @GetMapping("{hru}")
-  public Mono<ResponseEntity<Article>> getArticleByHru(@PathVariable String hru) {
-    return articleService
+  public Mono<ResponseEntity<ArticlesContainer>> getArticleByHru(@PathVariable String hru) {
+    return articlesContainerService
         .findArticleByHru(hru)
         .map(ResponseEntity::ok);
   }

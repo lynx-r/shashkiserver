@@ -33,9 +33,9 @@ import java.util.List;
 public class ArticlesResponse {
 
   private Long totalCount;
-  private List<Article> articles;
+  private List<ArticlesContainer> articles;
 
-  public static ArticlesResponse fromTuple2(Tuple2<Long, List<Article>> tuple2) {
+  public static ArticlesResponse fromTuple2(Tuple2<Long, List<ArticlesContainer>> tuple2) {
     return new ArticlesResponse(tuple2.getT1(), tuple2.getT2());
   }
 }

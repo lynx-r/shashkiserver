@@ -23,22 +23,17 @@ package com.workingbit.shashkiapp.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.workingbit.shashkiapp.config.ErrorMessages;
 import com.workingbit.shashkiapp.domain.Article;
-import com.workingbit.shashkiapp.domain.ArticlesResponse;
 import com.workingbit.shashkiapp.domain.BoardCell;
 import com.workingbit.shashkiapp.domain.EnumArticleStatus;
 import com.workingbit.shashkiapp.repo.ArticleRepo;
-import com.workingbit.shashkiapp.repo.PrivateArticleRepo;
+import com.workingbit.shashkiapp.repo.AuthArticleRepo;
 import com.workingbit.shashkiapp.repo.UserRepository;
 import com.workingbit.shashkiapp.util.JsonUtils;
-import com.workingbit.shashkiapp.util.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
@@ -53,50 +48,50 @@ public class ArticleService {
   private final Logger logger = LoggerFactory.getLogger(ArticleService.class);
 
   private final ArticleRepo articleRepo;
-  private final PrivateArticleRepo privateArticleRepo;
+  private final AuthArticleRepo authArticleRepo;
   //  private final BoardBoxService boardBoxService;
   private final UserRepository userRepository;
 
   public ArticleService(
       ArticleRepo articleRepo,
-      PrivateArticleRepo privateArticleRepo,
+      AuthArticleRepo authArticleRepo,
 //      BoardBoxService boardBoxService,
       UserRepository userRepository
   ) {
     this.articleRepo = articleRepo;
-    this.privateArticleRepo = privateArticleRepo;
+    this.authArticleRepo = authArticleRepo;
 //    this.boardBoxService = boardBoxService;
     this.userRepository = userRepository;
   }
 
   // Public
 
-  public Mono<ArticlesResponse> findAllPublicArticles(Integer page, Integer pageSize,
-                                                      String sort, String sortDirection,
-                                                      String contains) {
-    PageRequest pageable = PageRequest.of(page, pageSize, Sort.Direction.fromString(sortDirection), sort);
-    return Mono
-        .zip(articleRepo.countByPublished(),
-            StringUtils.isBlank(contains)
-                ? articleRepo.findAllByStatusPublished(pageable)
-                .collectList()
-                : articleRepo.findAllByStatusPublishedAndContains(contains, pageable)
-                .collectList())
-        .map(ArticlesResponse::fromTuple2);
-  }
+//  public Mono<ArticlesResponse> findAllPublicArticles(Integer page, Integer pageSize,
+//                                                      String sort, String sortDirection,
+//                                                      String contains) {
+//    PageRequest pageable = PageRequest.of(page, pageSize, Sort.Direction.fromString(sortDirection), sort);
+//    return Mono
+//        .zip(articleRepo.countByPublished(),
+//            StringUtils.isBlank(contains)
+//                ? articleRepo.findAllByStatusPublished(pageable)
+//                .collectList()
+//                : articleRepo.findAllByStatusPublishedAndContains(contains, pageable)
+//                .collectList())
+//        .map(ArticlesResponse::fromTuple2);
+//  }
 
-  public Mono<Article> findArticleByHru(String articleHru) {
-    return articleRepo.findByHumanReadableUrl(articleHru);
-  }
+//  public Mono<Article> findArticleByHru(String articleHru) {
+//    return articleRepo.findByHumanReadableUrl(articleHru);
+//  }
 
   // Private
 
-  public Mono<Article> privateFindArticleByHruAndAuthorId(ObjectId userId, String hru) {
-    return privateArticleRepo.findByAuthorIdAndHumanReadableUrl(userId, hru);
-  }
+//  public Mono<Article> authFindArticleByHruAndAuthorId(ObjectId userId, String hru) {
+//    return authArticleRepo.findByAuthorIdAndHumanReadableUrl(userId, hru);
+//  }
 
-  public Mono<Article> privateSaveArticle(ObjectId userId, Article articleClient) {
-    return privateArticleRepo.findByAuthorIdAndId(userId, articleClient.getId())
+  public Mono<Article> authSaveArticle(Article articleClient) {
+    return authArticleRepo.findById(articleClient.getId())
         .flatMap(article -> {
           if (article.getStatus().equals(EnumArticleStatus.REMOVED)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ErrorMessages.ARTICLE_IS_DELETED);
@@ -109,10 +104,10 @@ public class ArticleService {
             String content = articleClient.getContent().trim();
             article.setContent(content);
           }
-          if (StringUtils.isNotBlank(articleClient.getIntro())) {
-            String intro = articleClient.getIntro().trim();
-            article.setIntro(intro);
-          }
+//          if (StringUtils.isNotBlank(articleClient.getIntro())) {
+//            String intro = articleClient.getIntro().trim();
+//            article.setIntro(intro);
+//          }
           article.setTask(articleClient.isTask());
           article.setStatus(articleClient.getStatus());
           article.setNotation(articleClient.getNotation());
@@ -120,68 +115,53 @@ public class ArticleService {
         });
   }
 
-  public Mono<ArticlesResponse> privateFindAllByAuthor(ObjectId userId, Integer page, Integer pageSize,
-                                                       String sort, String sortDirection,
-                                                       String contains) {
-    PageRequest pageable = PageRequest.of(page, pageSize, Sort.Direction.fromString(sortDirection), sort);
-    if (StringUtils.isBlank(contains)) {
-      return Mono.zip(privateArticleRepo.countByAuthorId(userId),
-          privateArticleRepo.findAllByAuthorId(userId,
-              pageable)
-              .collectList())
-          .single()
-          .map(ArticlesResponse::fromTuple2);
-    } else {
-      return Mono.zip(privateArticleRepo.countAllByAuthorIdAndContains(userId, contains),
-          privateArticleRepo.findAllByAuthorIdAndContains(userId, contains, pageable)
-              .collectList())
-          .single()
-          .map(ArticlesResponse::fromTuple2);
-    }
-  }
+//  public Mono<ArticlesResponse> authFindAllByAuthor(ObjectId userId, Integer page, Integer pageSize,
+//                                                    String sort, String sortDirection,
+//                                                    String contains) {
+//    PageRequest pageable = PageRequest.of(page, pageSize, Sort.Direction.fromString(sortDirection), sort);
+//    if (StringUtils.isBlank(contains)) {
+//      return Mono.zip(authArticleRepo.countByAuthorId(userId),
+//          authArticleRepo.findAllByAuthorId(userId,
+//              pageable)
+//              .collectList())
+//          .single()
+//          .map(ArticlesResponse::fromTuple2);
+//    } else {
+//      return Mono.zip(authArticleRepo.countAllByAuthorIdAndContains(userId, contains),
+//          authArticleRepo.findAllByAuthorIdAndContains(userId, contains, pageable)
+//              .collectList())
+//          .single()
+//          .map(ArticlesResponse::fromTuple2);
+//    }
+//  }
 
-  public Mono<JsonNode> privateBoardCellTouch(BoardCell boardCell, ObjectId userId, ObjectId articleId) {
-    return privateArticleRepo.findByAuthorIdAndId(userId, articleId)
+  public Mono<JsonNode> privateBoardCellTouch(BoardCell boardCell, ObjectId articleId) {
+    return authArticleRepo.findById(articleId)
         .flatMap(article -> {
           var gameNotationNode = JsonUtils.dataToJsonNode(article.getNotation());
           var gnService = GameNotationService.fromGameNotation(article.getNotation());
           var gameNotationTouched = gnService.cellTouch(boardCell, false);
           article.setNotation(gameNotationTouched);
-          return privateArticleRepo.save(article)
+          return authArticleRepo.save(article)
               .thenReturn(JsonUtils.asJsonDiff(gameNotationNode, gameNotationTouched));
         });
   }
 
-  public Mono<Article> privateCreateArticle(Article article, Authentication authentication) {
+  Mono<Article> authCreateArticle(Article article, ObjectId containerId) {
     ObjectId articleId = ObjectId.get();
     article.setId(articleId);
     article.setStatus(EnumArticleStatus.DRAFT);
     article.setTitle(article.getTitle());
+    article.setContainerId(containerId);
 
-//    CreateBoardBoxRequest createBoardBoxRequest = createArticleRequest.getBoardBoxRequest();
-//    createBoardBoxRequest.setArticleId(articleId);
-//    createBoardBoxRequest.setBoardBoxId(boardBoxId);
-
-    return Mono
-        .zip(
-            userRepository.findByEmail(authentication.getName()),
-            articleRepo.existsByHumanReadableUrl(article.getHumanReadableUrl())
-        )
-        .flatMap(ueTuple -> {
-          ObjectId authorId = ueTuple.getT1().getId();
-          article.setAuthorId(authorId);
-
-          Utils.setArticleHru(article, ueTuple.getT2());
-
-          GameNotationService gnService;
-          if (article.getNotation().getNotationFen() != null) {
-            gnService = GameNotationService.fromGameNotation(article.getNotation());
-          } else {
-            gnService = GameNotationService.forRulesRussianCheckers();
-          }
-          article.setNotation(gnService.getGameNotation());
-          return articleRepo.save(article);
-        });
+    GameNotationService gnService;
+    if (article.getNotation().getNotationFen() != null) {
+      gnService = GameNotationService.fromGameNotation(article.getNotation());
+    } else {
+      gnService = GameNotationService.forRulesRussianCheckers();
+    }
+    article.setNotation(gnService.getGameNotation());
+    return articleRepo.save(article);
   }
 
 }

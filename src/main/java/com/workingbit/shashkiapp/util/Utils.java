@@ -20,7 +20,7 @@
 
 package com.workingbit.shashkiapp.util;
 
-import com.workingbit.shashkiapp.domain.Article;
+import com.workingbit.shashkiapp.domain.ArticlesContainer;
 import org.jetbrains.annotations.NotNull;
 
 import java.security.NoSuchAlgorithmException;
@@ -78,7 +78,7 @@ public class Utils {
     return result.toString();
   }
 
-  public static void setArticleHru(Article article, boolean present) {
+  public static void setArticleHru(ArticlesContainer article, boolean present) {
     article.setHumanReadableUrl(article.getHumanReadableUrl() + (present ? RANDOM_STR_SEP + getRandomString4() : ""));
   }
 

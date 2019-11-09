@@ -1,7 +1,7 @@
 /*
  * © Copyright
  *
- * ArticleRepo.java is part of shashkiserver.
+ * ArticlesContainerRepo.java is part of shashkiserver.
  *
  * shashkiserver is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 
 package com.workingbit.shashkiapp.repo;
 
-import com.workingbit.shashkiapp.domain.Article;
+import com.workingbit.shashkiapp.domain.ArticlesContainer;
 import com.workingbit.shashkiapp.domain.EnumArticleStatus;
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.Pageable;
@@ -33,20 +33,17 @@ import java.util.List;
 /**
  * Created by Aleksey Popryadukhin on 27/08/2018.
  */
-public interface ArticleRepo extends ReactiveMongoRepository<Article, ObjectId> {
+public interface ArticlesContainerRepo extends ReactiveMongoRepository<ArticlesContainer, ObjectId> {
+  Mono<ArticlesContainer> findByHumanReadableUrl(String hru);
 
-  Mono<Boolean> existsByHumanReadableUrl(String hru);
-
-//  Mono<Article> findByHumanReadableUrl(String hru);
-
-  default Flux<Article> findAllByStatusPublished(Pageable pageable) {
+  default Flux<ArticlesContainer> findAllByStatusPublished(Pageable pageable) {
     return findAllByStatusIn(List.of(EnumArticleStatus.PUBLISHED), pageable);
   }
 
-//  default Flux<Article> findAllByStatusPublishedAndContains(String content, Pageable pageable) {
-//    String contentRegex = "(?i).*" + content + ".*";
-//    return findAllByStatusInAndIntroMatchesRegexOrStatusInAndTitleMatchesRegex(List.of(EnumArticleStatus.PUBLISHED), contentRegex, List.of(EnumArticleStatus.PUBLISHED), contentRegex, pageable);
-//  }
+  default Flux<ArticlesContainer> findAllByStatusPublishedAndContains(String content, Pageable pageable) {
+    String contentRegex = "(?i).*" + content + ".*";
+    return findAllByStatusInAndIntroMatchesRegexOrStatusInAndTitleMatchesRegex(List.of(EnumArticleStatus.PUBLISHED), contentRegex, List.of(EnumArticleStatus.PUBLISHED), contentRegex, pageable);
+  }
 
   default Mono<Long> countByPublished() {
     return countByStatusIn(List.of(EnumArticleStatus.PUBLISHED));
@@ -54,8 +51,8 @@ public interface ArticleRepo extends ReactiveMongoRepository<Article, ObjectId> 
 
   Mono<Long> countByStatusIn(List<EnumArticleStatus> statuses);
 
-  Flux<Article> findAllByStatusIn(List<EnumArticleStatus> status, Pageable pageable);
+  Flux<ArticlesContainer> findAllByStatusIn(List<EnumArticleStatus> status, Pageable pageable);
 
-//  Flux<Article> findAllByStatusInAndIntroMatchesRegexOrStatusInAndTitleMatchesRegex(List<EnumArticleStatus> status, String content, List<EnumArticleStatus> status2, String intro, Pageable pageable);
+  Flux<ArticlesContainer> findAllByStatusInAndIntroMatchesRegexOrStatusInAndTitleMatchesRegex(List<EnumArticleStatus> status, String content, List<EnumArticleStatus> status2, String intro, Pageable pageable);
 
 }
