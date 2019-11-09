@@ -75,7 +75,7 @@ public class AuthArticleController {
         .map(ResponseEntity::ok);
   }
 
-  @PutMapping("item")
+  @PutMapping("block")
   @PreAuthorize("hasRole('USER')")
   public Mono<ResponseEntity<ArticleBlock>> saveArticleBlock(@RequestBody ArticleBlock articleBlock) {
     return articleBlockService

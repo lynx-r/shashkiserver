@@ -49,12 +49,15 @@ public class Article extends BaseDomain {
 
   private EnumArticleStatus status;
 
+  private LinkedList<ObjectId> articleBlockIds;
+
   @Transient
   private LinkedList<ArticleBlock> articleBlocks;
 
-  private ObjectId selectedArticleId;
+  private ObjectId selectedArticleBlockId;
 
-  private LinkedList<ObjectId> articleBlockIds;
+  @Transient
+  private ArticleBlock selectedArticleBlock;
 
   private boolean task;
 

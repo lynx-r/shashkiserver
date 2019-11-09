@@ -81,7 +81,8 @@ public class ArticleService {
               .flatMap(articleBlockNew -> {
                 article.getArticleBlockIds().add(article.getId());
                 article.getArticleBlocks().add(articleBlockNew);
-                article.setSelectedArticleId(articleBlockNew.getId());
+                article.setSelectedArticleBlockId(articleBlockNew.getId());
+                article.setSelectedArticleBlock(articleBlockNew);
                 return articleRepo.save(article);
               });
         });
