@@ -22,11 +22,11 @@ package com.workingbit.shashkiapp.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.workingbit.shashkiapp.domain.Article;
-import com.workingbit.shashkiapp.domain.ArticlesContainer;
+import com.workingbit.shashkiapp.domain.ArticleBlock;
 import com.workingbit.shashkiapp.domain.ArticlesResponse;
 import com.workingbit.shashkiapp.domain.BoardCell;
+import com.workingbit.shashkiapp.service.ArticleBlockService;
 import com.workingbit.shashkiapp.service.ArticleService;
-import com.workingbit.shashkiapp.service.ArticlesContainerService;
 import org.bson.types.ObjectId;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,43 +37,43 @@ import reactor.core.publisher.Mono;
 @RequestMapping("api/user/{userId}/article")
 public class PrivateArticleController {
 
+  private final ArticleBlockService articleBlockService;
   private final ArticleService articleService;
-  private final ArticlesContainerService articlesContainerService;
 
-  public PrivateArticleController(ArticleService articleService,
-                                  ArticlesContainerService articlesContainerService) {
+  public PrivateArticleController(ArticleBlockService articleBlockService,
+                                  ArticleService articleService) {
+    this.articleBlockService = articleBlockService;
     this.articleService = articleService;
-    this.articlesContainerService = articlesContainerService;
   }
 
   @PostMapping
   @PreAuthorize("hasRole('USER')")
-  public Mono<ResponseEntity<ArticlesContainer>> authCreateArticlesContainer(
+  public Mono<ResponseEntity<Article>> authCreateArticlesContainer(
       @PathVariable ObjectId userId,
-      @RequestBody ArticlesContainer container
+      @RequestBody Article container
   ) {
-    return articlesContainerService
+    return articleService
         .authCreateArticlesContainer(userId, container)
         .map(ResponseEntity::ok);
   }
 
   @PutMapping("{containerId}/add")
   @PreAuthorize("hasRole('USER')")
-  public Mono<ResponseEntity<Article>> authAddArticleToContainer(
+  public Mono<ResponseEntity<ArticleBlock>> authAddArticleToContainer(
       @PathVariable ObjectId userId,
       @PathVariable ObjectId containerId,
-      @RequestBody Article article
+      @RequestBody ArticleBlock articleBlock
   ) {
-    return articlesContainerService
-        .authAddArticleToContainer(containerId, userId, article)
+    return articleService
+        .authAddArticleToContainer(containerId, userId, articleBlock)
         .map(ResponseEntity::ok);
   }
 
   @PutMapping("item")
   @PreAuthorize("hasRole('USER')")
-  public Mono<ResponseEntity<Article>> saveArticle(@RequestBody Article article) {
-    return articleService
-        .authSaveArticle(article)
+  public Mono<ResponseEntity<ArticleBlock>> saveArticle(@RequestBody ArticleBlock articleBlock) {
+    return articleBlockService
+        .authSaveArticle(articleBlock)
         .map(ResponseEntity::ok);
   }
 
@@ -87,12 +87,12 @@ public class PrivateArticleController {
       @RequestParam(value = "sortDirection", required = false, defaultValue = "desc") String sortDirection,
       @RequestParam(value = "contains", required = false) String contains
   ) {
-    return articlesContainerService.authFindAllByAuthor(userId, page, pageSize, sort, sortDirection, contains);
+    return articleService.authFindAllByAuthor(userId, page, pageSize, sort, sortDirection, contains);
   }
 
   @GetMapping("{hru}")
-  public Mono<ResponseEntity<ArticlesContainer>> getArticleByHruAndAuthorId(@PathVariable ObjectId userId, @PathVariable String hru) {
-    return articlesContainerService
+  public Mono<ResponseEntity<Article>> getArticleByHruAndAuthorId(@PathVariable ObjectId userId, @PathVariable String hru) {
+    return articleService
         .authFindArticleByHruAndAuthorId(userId, hru)
         .map(ResponseEntity::ok);
   }
@@ -102,7 +102,7 @@ public class PrivateArticleController {
       @PathVariable ObjectId articleId,
       @RequestBody BoardCell boardCell
   ) {
-    return articleService.privateBoardCellTouch(boardCell, articleId)
+    return articleBlockService.privateBoardCellTouch(boardCell, articleId)
         .map(ResponseEntity::ok);
   }
 

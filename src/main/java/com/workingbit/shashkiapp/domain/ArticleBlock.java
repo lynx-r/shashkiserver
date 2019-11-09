@@ -1,7 +1,7 @@
 /*
  * © Copyright
  *
- * ArticlesContainer.java is part of shashkiserver.
+ * ArticleBlock.java is part of shashkiserver.
  *
  * shashkiserver is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,42 +23,33 @@ package com.workingbit.shashkiapp.domain;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.bson.types.ObjectId;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-import java.util.LinkedList;
 
+/**
+ * Created by Aleksey Popryaduhin on 18:31 09/08/2017.
+ */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Document
-public class ArticlesContainer extends BaseDomain {
+public class ArticleBlock extends BaseDomain {
 
   @NotNull
-  private ObjectId authorId;
+  private ObjectId containerId;
 
-  @Size(min = 4, max = 200)
+  //  @Size(min = 4, max = 200)
   private String title;
 
-  @Size(min = 20, max = 250)
-  private String intro;
+  //  @Size(min = 50, max = 50000)
+  private String content;
 
-  @Size(min = 4, max = 2000)
-  private String humanReadableUrl;
+  @NotNull
+  private GameNotation notation;
 
   @NotNull
   private EnumArticleStatus status;
 
-  @Transient
-  private LinkedList<Article> articles;
-
-  private LinkedList<ObjectId> articlesIds;
-
   private boolean task;
 
-  public ArticlesContainer() {
-    articles = new LinkedList<>();
-    articlesIds = new LinkedList<>();
-  }
 }
