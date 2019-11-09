@@ -21,10 +21,7 @@
 package com.workingbit.shashkiapp.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.workingbit.shashkiapp.domain.Article;
-import com.workingbit.shashkiapp.domain.ArticleBlock;
-import com.workingbit.shashkiapp.domain.ArticlesResponse;
-import com.workingbit.shashkiapp.domain.BoardCell;
+import com.workingbit.shashkiapp.domain.*;
 import com.workingbit.shashkiapp.service.ArticleBlockService;
 import com.workingbit.shashkiapp.service.ArticleService;
 import org.bson.types.ObjectId;
@@ -50,10 +47,10 @@ public class AuthArticleController {
   @PreAuthorize("hasRole('USER')")
   public Mono<ResponseEntity<Article>> authCreateArticlesContainer(
       @PathVariable ObjectId userId,
-      @RequestBody Article container
+      @RequestBody ArticleCreateRequest articleCreateRequest
   ) {
     return articleService
-        .authCreateArticle(userId, container)
+        .authCreateArticle(userId, articleCreateRequest)
         .map(ResponseEntity::ok);
   }
 

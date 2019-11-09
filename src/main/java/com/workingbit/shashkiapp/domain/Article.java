@@ -47,18 +47,19 @@ public class Article extends BaseDomain {
   @Size(min = 4, max = 2000)
   private String humanReadableUrl;
 
-  @NotNull
   private EnumArticleStatus status;
 
   @Transient
   private LinkedList<ArticleBlock> articleBlocks;
 
-  private LinkedList<ObjectId> articlesIds;
+  private ObjectId selectedArticleId;
+
+  private LinkedList<ObjectId> articleBlockIds;
 
   private boolean task;
 
   public Article() {
     articleBlocks = new LinkedList<>();
-    articlesIds = new LinkedList<>();
+    articleBlockIds = new LinkedList<>();
   }
 }

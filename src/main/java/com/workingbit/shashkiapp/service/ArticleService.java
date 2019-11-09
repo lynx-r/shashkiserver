@@ -21,10 +21,7 @@
 package com.workingbit.shashkiapp.service;
 
 import com.workingbit.shashkiapp.config.ErrorMessages;
-import com.workingbit.shashkiapp.domain.Article;
-import com.workingbit.shashkiapp.domain.ArticleBlock;
-import com.workingbit.shashkiapp.domain.ArticlesResponse;
-import com.workingbit.shashkiapp.domain.EnumArticleStatus;
+import com.workingbit.shashkiapp.domain.*;
 import com.workingbit.shashkiapp.repo.ArticleRepo;
 import com.workingbit.shashkiapp.repo.AuthArticleRepo;
 import com.workingbit.shashkiapp.util.Utils;
@@ -62,26 +59,30 @@ public class ArticleService {
         .flatMap(articleArticleTuple2 -> {
           var article = articleArticleTuple2.getT1();
           var articleNew = articleArticleTuple2.getT2();
-          article.getArticlesIds().add(articleNew.getId());
+          article.getArticleBlockIds().add(articleNew.getId());
           return articleRepo.save(article).thenReturn(articleNew);
         });
   }
 
-  public Mono<Article> authCreateArticle(ObjectId userId, Article article) {
+  public Mono<Article> authCreateArticle(ObjectId userId, ArticleCreateRequest articleCreateRequest) {
+    var article = articleCreateRequest.getArticle();
+    var gameNotation = articleCreateRequest.getNotation();
     article.setHumanReadableUrl(article.getTitle());
     article.setAuthorId(userId);
     return authArticleRepo
         .existsByHumanReadableUrl(article.getHumanReadableUrl())
         .flatMap(exists -> {
           Utils.setArticleHru(article, exists);
-          return articleRepo.save(article);
-        })
-        .flatMap(articleNew -> {
+          article.setId(ObjectId.get());
+          article.setStatus(EnumArticleStatus.DRAFT);
           var articleBlock = new ArticleBlock();
-          return authAddArticleBlockToArticle(articleNew.getId(), userId, articleBlock)
-              .map(articleBlockNew -> {
-                articleNew.getArticleBlocks().add(articleBlockNew);
-                return articleNew;
+          articleBlock.setNotation(gameNotation);
+          return articleBlockService.authCreateArticle(articleBlock, article.getId())
+              .flatMap(articleBlockNew -> {
+                article.getArticleBlockIds().add(article.getId());
+                article.getArticleBlocks().add(articleBlockNew);
+                article.setSelectedArticleId(articleBlockNew.getId());
+                return articleRepo.save(article);
               });
         });
   }
