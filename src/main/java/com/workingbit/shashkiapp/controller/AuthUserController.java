@@ -1,7 +1,7 @@
 /*
  * © Copyright
  *
- * PrivateUserController.java is part of shashkiserver.
+ * AuthUserController.java is part of shashkiserver.
  *
  * shashkiserver is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,11 +34,11 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("api/user/{userId}/account")
-public class PrivateUserController {
+public class AuthUserController {
 
   private final UserService userService;
 
-  public PrivateUserController(UserService userService) {
+  public AuthUserController(UserService userService) {
     this.userService = userService;
   }
 

@@ -1,7 +1,7 @@
 /*
  * © Copyright
  *
- * PrivateArticleController.java is part of shashkiserver.
+ * AuthArticleController.java is part of shashkiserver.
  *
  * shashkiserver is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,13 +35,13 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("api/user/{userId}/article")
-public class PrivateArticleController {
+public class AuthArticleController {
 
   private final ArticleBlockService articleBlockService;
   private final ArticleService articleService;
 
-  public PrivateArticleController(ArticleBlockService articleBlockService,
-                                  ArticleService articleService) {
+  public AuthArticleController(ArticleBlockService articleBlockService,
+                               ArticleService articleService) {
     this.articleBlockService = articleBlockService;
     this.articleService = articleService;
   }
@@ -53,7 +53,7 @@ public class PrivateArticleController {
       @RequestBody Article container
   ) {
     return articleService
-        .authCreateArticlesContainer(userId, container)
+        .authCreateArticle(userId, container)
         .map(ResponseEntity::ok);
   }
 
@@ -65,13 +65,22 @@ public class PrivateArticleController {
       @RequestBody ArticleBlock articleBlock
   ) {
     return articleService
-        .authAddArticleToContainer(containerId, userId, articleBlock)
+        .authAddArticleBlockToArticle(containerId, userId, articleBlock)
+        .map(ResponseEntity::ok);
+  }
+
+  @PutMapping
+  @PreAuthorize("hasRole('USER')")
+  public Mono<ResponseEntity<Article>> saveArticle(@PathVariable ObjectId userId,
+                                                   @RequestBody Article article) {
+    return articleService
+        .authSaveArticle(userId, article)
         .map(ResponseEntity::ok);
   }
 
   @PutMapping("item")
   @PreAuthorize("hasRole('USER')")
-  public Mono<ResponseEntity<ArticleBlock>> saveArticle(@RequestBody ArticleBlock articleBlock) {
+  public Mono<ResponseEntity<ArticleBlock>> saveArticleBlock(@RequestBody ArticleBlock articleBlock) {
     return articleBlockService
         .authSaveArticle(articleBlock)
         .map(ResponseEntity::ok);
@@ -97,12 +106,12 @@ public class PrivateArticleController {
         .map(ResponseEntity::ok);
   }
 
-  @PutMapping("{articleId}/board")
+  @PutMapping("{articleBlockId}/board")
   public Mono<ResponseEntity<JsonNode>> boardCellTouched(
-      @PathVariable ObjectId articleId,
+      @PathVariable ObjectId articleBlockId,
       @RequestBody BoardCell boardCell
   ) {
-    return articleBlockService.privateBoardCellTouch(boardCell, articleId)
+    return articleBlockService.privateBoardCellTouch(boardCell, articleBlockId)
         .map(ResponseEntity::ok);
   }
 

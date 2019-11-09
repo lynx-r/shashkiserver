@@ -56,52 +56,52 @@ public class ArticleService {
 //    return authArticlesContainerRepo.findByIdAndAuthorId(containerId, authorId);
 //  }
 
-  public Mono<ArticleBlock> authAddArticleToContainer(ObjectId containerId, ObjectId authorId, ArticleBlock articleBlock) {
-    return authArticleRepo.findByAuthorIdAndId(authorId, containerId)
-        .zipWhen(container -> articleBlockService.authCreateArticle(articleBlock, containerId))
-        .flatMap(containerArticleTuple2 -> {
-          var container = containerArticleTuple2.getT1();
-          var articleNew = containerArticleTuple2.getT2();
-          container.getArticlesIds().add(articleNew.getId());
-          return articleRepo.save(container).thenReturn(articleNew);
+  public Mono<ArticleBlock> authAddArticleBlockToArticle(ObjectId articleId, ObjectId authorId, ArticleBlock articleBlock) {
+    return authArticleRepo.findByAuthorIdAndId(authorId, articleId)
+        .zipWhen(article -> articleBlockService.authCreateArticle(articleBlock, articleId))
+        .flatMap(articleArticleTuple2 -> {
+          var article = articleArticleTuple2.getT1();
+          var articleNew = articleArticleTuple2.getT2();
+          article.getArticlesIds().add(articleNew.getId());
+          return articleRepo.save(article).thenReturn(articleNew);
         });
   }
 
-  public Mono<Article> authCreateArticlesContainer(ObjectId userId, Article container) {
-    container.setHumanReadableUrl(container.getTitle());
-    container.setAuthorId(userId);
+  public Mono<Article> authCreateArticle(ObjectId userId, Article article) {
+    article.setHumanReadableUrl(article.getTitle());
+    article.setAuthorId(userId);
     return authArticleRepo
-        .existsByHumanReadableUrl(container.getHumanReadableUrl())
+        .existsByHumanReadableUrl(article.getHumanReadableUrl())
         .flatMap(exists -> {
-          Utils.setArticleHru(container, exists);
-          return articleRepo.save(container);
+          Utils.setArticleHru(article, exists);
+          return articleRepo.save(article);
         })
-        .flatMap(containerNew -> {
-          var article = new ArticleBlock();
-          return authAddArticleToContainer(containerNew.getId(), userId, article)
-              .map(articleNew -> {
-                containerNew.getArticleBlocks().add(articleNew);
-                return containerNew;
+        .flatMap(articleNew -> {
+          var articleBlock = new ArticleBlock();
+          return authAddArticleBlockToArticle(articleNew.getId(), userId, articleBlock)
+              .map(articleBlockNew -> {
+                articleNew.getArticleBlocks().add(articleBlockNew);
+                return articleNew;
               });
         });
   }
 
-  public Mono<Article> authSaveArticlesContainer(ObjectId userId, Article container) {
-    return authArticleRepo.findByAuthorIdAndId(userId, container.getId())
+  public Mono<Article> authSaveArticle(ObjectId userId, Article articleClient) {
+    return authArticleRepo.findByAuthorIdAndId(userId, articleClient.getId())
         .flatMap(article -> {
           if (article.getStatus().equals(EnumArticleStatus.REMOVED)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ErrorMessages.ARTICLE_IS_DELETED);
           }
-          if (StringUtils.isNotBlank(container.getTitle())) {
-            String title = container.getTitle().trim();
+          if (StringUtils.isNotBlank(articleClient.getTitle())) {
+            String title = articleClient.getTitle().trim();
             article.setTitle(title);
           }
-          if (StringUtils.isNotBlank(container.getIntro())) {
-            String intro = container.getIntro().trim();
+          if (StringUtils.isNotBlank(articleClient.getIntro())) {
+            String intro = articleClient.getIntro().trim();
             article.setIntro(intro);
           }
-          article.setTask(container.isTask());
-          article.setStatus(container.getStatus());
+          article.setTask(articleClient.isTask());
+          article.setStatus(articleClient.getStatus());
           return articleRepo.save(article);
         });
   }

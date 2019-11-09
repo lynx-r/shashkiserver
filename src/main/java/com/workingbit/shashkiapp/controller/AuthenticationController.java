@@ -1,7 +1,7 @@
 /*
  * © Copyright
  *
- * AuthController.java is part of shashkiserver.
+ * AuthenticationController.java is part of shashkiserver.
  *
  * shashkiserver is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,11 +37,11 @@ import static org.springframework.http.ResponseEntity.badRequest;
 
 @RestController
 @RequestMapping("api/auth")
-public class AuthController {
+public class AuthenticationController {
 
   private final UserService userService;
 
-  public AuthController(UserService userService) {
+  public AuthenticationController(UserService userService) {
     this.userService = userService;
   }
 
