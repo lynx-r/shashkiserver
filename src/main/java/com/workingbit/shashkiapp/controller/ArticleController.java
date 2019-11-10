@@ -61,7 +61,7 @@ public class ArticleController {
         .map(ResponseEntity::ok);
   }
 
-  @PostMapping("{articleId}/fetch")
+  @PostMapping("fetch")
   @PreAuthorize("hasRole('USER')")
   public Mono<ResponseEntity<Article>> authFetchArticle(@RequestBody Article article) {
     return articleService.fetchArticle(article)
