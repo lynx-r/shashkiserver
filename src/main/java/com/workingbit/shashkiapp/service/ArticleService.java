@@ -56,17 +56,19 @@ public class ArticleService {
     this.authArticleRepo = authArticleRepo;
   }
 
-//  public Mono<ArticlesContainer> authArticlesContainer(ObjectId containerId, ObjectId authorId) {
-//    return authArticlesContainerRepo.findByIdAndAuthorId(containerId, authorId);
-//  }
-
-  public Mono<ArticleBlock> authAddArticleBlockToArticle(ObjectId articleId, ObjectId authorId, ArticleBlock articleBlock) {
+  public Mono<ArticleBlock> authAddArticleBlockToArticle(ObjectId articleId, ObjectId authorId,
+                                                         ArticleBlock articleBlock,
+                                                         Boolean append) {
     return authArticleRepo.findByAuthorIdAndId(authorId, articleId)
         .zipWhen(article -> articleBlockService.authCreateArticleBlock(articleBlock, articleId))
         .flatMap(articleArticleTuple2 -> {
           var article = articleArticleTuple2.getT1();
           var articleBlockNew = articleArticleTuple2.getT2();
-          article.getArticleBlockIds().add(0, articleBlockNew.getId());
+          if (append) {
+            article.getArticleBlockIds().add(articleBlockNew.getId());
+          } else {
+            article.getArticleBlockIds().add(0, articleBlockNew.getId());
+          }
           article.setSelectedArticleBlockId(articleBlockNew.getId());
           return articleRepo.save(article).thenReturn(articleBlockNew);
         });
@@ -197,7 +199,7 @@ public class ArticleService {
         .flatMap(article -> {
           article.getArticleBlockIds().remove(articleBlockId);
           if (article.getSelectedArticleBlockId() != null && article.getSelectedArticleBlockId().equals(articleBlockId)) {
-            article.setSelectedArticleBlockId(null);
+            article.setSelectedArticleBlockId(article.getArticleBlockIds().getFirst());
           }
           return authArticleRepo.save(article);
         })

@@ -59,10 +59,11 @@ public class AuthArticleController {
   public Mono<ResponseEntity<ArticleBlock>> authAddArticleToContainer(
       @PathVariable ObjectId userId,
       @PathVariable ObjectId articleId,
+      @RequestParam(value = "append", required = false, defaultValue = "false") Boolean append,
       @RequestBody ArticleBlock articleBlock
   ) {
     return articleService
-        .authAddArticleBlockToArticle(articleId, userId, articleBlock)
+        .authAddArticleBlockToArticle(articleId, userId, articleBlock, append)
         .map(ResponseEntity::ok);
   }
 
