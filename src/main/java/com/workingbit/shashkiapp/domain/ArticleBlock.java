@@ -36,7 +36,7 @@ import javax.validation.constraints.NotNull;
 public class ArticleBlock extends BaseDomain {
 
   @NotNull
-  private ObjectId containerId;
+  private ObjectId articleId;
 
   //  @Size(min = 4, max = 200)
   private String title;

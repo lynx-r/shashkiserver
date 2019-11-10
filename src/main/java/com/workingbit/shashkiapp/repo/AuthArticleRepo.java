@@ -34,6 +34,8 @@ public interface AuthArticleRepo extends ReactiveMongoRepository<Article, Object
 
   Mono<Boolean> existsByHumanReadableUrl(String hru);
 
+  Mono<Boolean> existsByAuthorIdAndId(ObjectId authorId, ObjectId articleId);
+
   Mono<Article> findByAuthorIdAndHumanReadableUrl(ObjectId authorId, String hru);
 
   Mono<Article> findByAuthorIdAndId(ObjectId articleId, ObjectId authorId);

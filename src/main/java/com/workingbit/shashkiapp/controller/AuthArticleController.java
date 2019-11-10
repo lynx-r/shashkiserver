@@ -54,15 +54,15 @@ public class AuthArticleController {
         .map(ResponseEntity::ok);
   }
 
-  @PutMapping("{containerId}/add")
+  @PutMapping("{articleId}/add")
   @PreAuthorize("hasRole('USER')")
   public Mono<ResponseEntity<ArticleBlock>> authAddArticleToContainer(
       @PathVariable ObjectId userId,
-      @PathVariable ObjectId containerId,
+      @PathVariable ObjectId articleId,
       @RequestBody ArticleBlock articleBlock
   ) {
     return articleService
-        .authAddArticleBlockToArticle(containerId, userId, articleBlock)
+        .authAddArticleBlockToArticle(articleId, userId, articleBlock)
         .map(ResponseEntity::ok);
   }
 
@@ -97,6 +97,7 @@ public class AuthArticleController {
   }
 
   @GetMapping("{hru}")
+  @PreAuthorize("hasRole('USER')")
   public Mono<ResponseEntity<Article>> getArticleByHruAndAuthorId(@PathVariable ObjectId userId, @PathVariable String hru) {
     return articleService
         .authFindArticleByHruAndAuthorId(userId, hru)
@@ -104,6 +105,7 @@ public class AuthArticleController {
   }
 
   @PutMapping("{articleBlockId}/board")
+  @PreAuthorize("hasRole('USER')")
   public Mono<ResponseEntity<JsonNode>> boardCellTouched(
       @PathVariable ObjectId articleBlockId,
       @RequestBody BoardCell boardCell
@@ -112,4 +114,12 @@ public class AuthArticleController {
         .map(ResponseEntity::ok);
   }
 
+  @PostMapping("{articleId}/fetch")
+  @PreAuthorize("hasRole('USER')")
+  public Mono<ResponseEntity<Article>> authFetchArticle(@PathVariable ObjectId userId,
+                                                        @RequestBody Article article
+  ) {
+    return articleService.authFetchArticle(article, userId)
+        .map(ResponseEntity::ok);
+  }
 }

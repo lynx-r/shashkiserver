@@ -22,6 +22,7 @@ package com.workingbit.shashkiapp.controller;
 
 import com.workingbit.shashkiapp.domain.Article;
 import com.workingbit.shashkiapp.domain.ArticlesResponse;
+import com.workingbit.shashkiapp.service.ArticleBlockService;
 import com.workingbit.shashkiapp.service.ArticleService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,9 +34,12 @@ import reactor.core.publisher.Mono;
 public class ArticleController {
 
   private final ArticleService articleService;
+  private final ArticleBlockService articleBlockService;
 
-  public ArticleController(ArticleService articleService) {
+  public ArticleController(ArticleService articleService,
+                           ArticleBlockService articleBlockService) {
     this.articleService = articleService;
+    this.articleBlockService = articleBlockService;
   }
 
   @GetMapping("list")
@@ -54,6 +58,13 @@ public class ArticleController {
   public Mono<ResponseEntity<Article>> getArticleByHru(@PathVariable String hru) {
     return articleService
         .findArticleByHru(hru)
+        .map(ResponseEntity::ok);
+  }
+
+  @PostMapping("{articleId}/fetch")
+  @PreAuthorize("hasRole('USER')")
+  public Mono<ResponseEntity<Article>> authFetchArticle(@RequestBody Article article) {
+    return articleService.fetchArticle(article)
         .map(ResponseEntity::ok);
   }
 

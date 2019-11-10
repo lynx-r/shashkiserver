@@ -27,6 +27,7 @@ import com.workingbit.shashkiapp.domain.BoardCell;
 import com.workingbit.shashkiapp.domain.EnumArticleStatus;
 import com.workingbit.shashkiapp.repo.ArticleBlockRepo;
 import com.workingbit.shashkiapp.repo.AuthArticleBlockRepo;
+import com.workingbit.shashkiapp.repo.AuthArticleRepo;
 import com.workingbit.shashkiapp.repo.UserRepository;
 import com.workingbit.shashkiapp.util.JsonUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -36,7 +37,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 
 /**
@@ -47,24 +51,31 @@ public class ArticleBlockService {
 
   private final Logger logger = LoggerFactory.getLogger(ArticleBlockService.class);
 
+  private final AuthArticleRepo authArticleRepo;
   private final ArticleBlockRepo articleBlockRepo;
   private final AuthArticleBlockRepo authArticleBlockRepo;
   //  private final BoardBoxService boardBoxService;
   private final UserRepository userRepository;
 
   public ArticleBlockService(
+      AuthArticleRepo authArticleRepo,
       ArticleBlockRepo articleBlockRepo,
       AuthArticleBlockRepo authArticleBlockRepo,
-//      BoardBoxService boardBoxService,
       UserRepository userRepository
   ) {
+    this.authArticleRepo = authArticleRepo;
     this.articleBlockRepo = articleBlockRepo;
     this.authArticleBlockRepo = authArticleBlockRepo;
-//    this.boardBoxService = boardBoxService;
     this.userRepository = userRepository;
   }
 
   // Public
+
+  public Flux<ArticleBlock> findAllArticleBlockByIdsAndArticleId(List<ObjectId> articleBlockIds, ObjectId articleId) {
+    return authArticleRepo.existsById(articleId)
+        .filter(exists -> exists)
+        .thenMany(articleBlockRepo.findAllById(articleBlockIds));
+  }
 
 //  public Mono<ArticlesResponse> findAllPublicArticles(Integer page, Integer pageSize,
 //                                                      String sort, String sortDirection,
@@ -93,8 +104,11 @@ public class ArticleBlockService {
   public Mono<ArticleBlock> authSaveArticle(ArticleBlock articleBlockClient) {
     return authArticleBlockRepo.findById(articleBlockClient.getId())
         .flatMap(article -> {
-          if (article.getStatus().equals(EnumArticleStatus.REMOVED)) {
+          if (EnumArticleStatus.REMOVED.equals(articleBlockClient.getStatus())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ErrorMessages.ARTICLE_IS_DELETED);
+          }
+          if (EnumArticleStatus.NEW.equals(article.getStatus())) {
+            article.setStatus(EnumArticleStatus.DRAFT);
           }
           if (StringUtils.isNotBlank(articleBlockClient.getTitle())) {
             String title = articleBlockClient.getTitle().trim();
@@ -147,12 +161,10 @@ public class ArticleBlockService {
         });
   }
 
-  Mono<ArticleBlock> authCreateArticle(ArticleBlock articleBlock, ObjectId containerId) {
-    ObjectId articleId = ObjectId.get();
-    articleBlock.setId(articleId);
-    articleBlock.setStatus(EnumArticleStatus.DRAFT);
+  Mono<ArticleBlock> authCreateArticleBlock(ArticleBlock articleBlock, ObjectId articleId) {
+    articleBlock.setStatus(EnumArticleStatus.NEW);
     articleBlock.setTitle(articleBlock.getTitle());
-    articleBlock.setContainerId(containerId);
+    articleBlock.setArticleId(articleId);
 
     GameNotationService gnService;
     if (articleBlock.getNotation().getNotationFen() != null) {
@@ -164,4 +176,7 @@ public class ArticleBlockService {
     return articleBlockRepo.save(articleBlock);
   }
 
+  public Flux<ArticleBlock> findByIds(List<ObjectId> articleBlockIds) {
+    return articleBlockRepo.findAllById(articleBlockIds);
+  }
 }

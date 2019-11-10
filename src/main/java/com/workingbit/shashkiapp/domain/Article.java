@@ -32,7 +32,7 @@ import java.util.LinkedList;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-@Document
+@Document("article")
 public class Article extends BaseDomain {
 
   @NotNull

@@ -27,12 +27,17 @@ import com.workingbit.shashkiapp.repo.AuthArticleRepo;
 import com.workingbit.shashkiapp.util.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
+
+import java.util.LinkedList;
+import java.util.List;
 
 @Service
 public class ArticleService {
@@ -55,12 +60,13 @@ public class ArticleService {
 
   public Mono<ArticleBlock> authAddArticleBlockToArticle(ObjectId articleId, ObjectId authorId, ArticleBlock articleBlock) {
     return authArticleRepo.findByAuthorIdAndId(authorId, articleId)
-        .zipWhen(article -> articleBlockService.authCreateArticle(articleBlock, articleId))
+        .zipWhen(article -> articleBlockService.authCreateArticleBlock(articleBlock, articleId))
         .flatMap(articleArticleTuple2 -> {
           var article = articleArticleTuple2.getT1();
-          var articleNew = articleArticleTuple2.getT2();
-          article.getArticleBlockIds().add(articleNew.getId());
-          return articleRepo.save(article).thenReturn(articleNew);
+          var articleBlockNew = articleArticleTuple2.getT2();
+          article.getArticleBlockIds().add(0, articleBlockNew.getId());
+          article.setSelectedArticleBlockId(articleBlockNew.getId());
+          return articleRepo.save(article).thenReturn(articleBlockNew);
         });
   }
 
@@ -77,9 +83,9 @@ public class ArticleService {
           article.setStatus(EnumArticleStatus.DRAFT);
           var articleBlock = new ArticleBlock();
           articleBlock.setNotation(gameNotation);
-          return articleBlockService.authCreateArticle(articleBlock, article.getId())
+          return articleBlockService.authCreateArticleBlock(articleBlock, article.getId())
               .flatMap(articleBlockNew -> {
-                article.getArticleBlockIds().add(article.getId());
+                article.getArticleBlockIds().add(articleBlockNew.getId());
                 article.getArticleBlocks().add(articleBlockNew);
                 article.setSelectedArticleBlockId(articleBlockNew.getId());
                 article.setSelectedArticleBlock(articleBlockNew);
@@ -152,4 +158,31 @@ public class ArticleService {
   public Mono<Article> findArticleByHru(String articleHru) {
     return articleRepo.findByHumanReadableUrl(articleHru);
   }
+
+  public Mono<Article> fetchArticle(Article articleClient) {
+    return authArticleRepo.findById(articleClient.getId())
+        .zipWhen(a -> articleBlockService.findByIds(a.getArticleBlockIds()).collectList())
+        .map(this::fillArticle);
+  }
+
+  public Mono<Article> authFetchArticle(Article articleClient, ObjectId userId) {
+    return authArticleRepo.findByAuthorIdAndId(userId, articleClient.getId())
+        .zipWhen(a -> articleBlockService.findByIds(a.getArticleBlockIds()).collectList())
+        .map(this::fillArticle);
+  }
+
+  @NotNull
+  private Article fillArticle(Tuple2<Article, List<ArticleBlock>> tuple2) {
+    var article = tuple2.getT1();
+    var articleBlocks = tuple2.getT2();
+    article.setArticleBlocks(new LinkedList<>(articleBlocks));
+    var selABId = article.getSelectedArticleBlockId();
+    articleBlocks
+        .stream()
+        .filter(ab -> selABId.equals(ab.getId()))
+        .findFirst()
+        .ifPresent(article::setSelectedArticleBlock);
+    return article;
+  }
+
 }
