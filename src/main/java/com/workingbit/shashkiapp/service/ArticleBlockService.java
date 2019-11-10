@@ -66,37 +66,13 @@ public class ArticleBlockService {
     this.userRepository = userRepository;
   }
 
-  // Public
+  // For public users
 
-  public Flux<ArticleBlock> findAllArticleBlockByIdsAndArticleId(List<ObjectId> articleBlockIds, ObjectId articleId) {
-    return authArticleRepo.existsById(articleId)
-        .filter(exists -> exists)
-        .thenMany(articleBlockRepo.findAllById(articleBlockIds));
+  public Flux<ArticleBlock> findByIds(List<ObjectId> articleBlockIds) {
+    return articleBlockRepo.findAllById(articleBlockIds);
   }
 
-//  public Mono<ArticlesResponse> findAllPublicArticles(Integer page, Integer pageSize,
-//                                                      String sort, String sortDirection,
-//                                                      String contains) {
-//    PageRequest pageable = PageRequest.of(page, pageSize, Sort.Direction.fromString(sortDirection), sort);
-//    return Mono
-//        .zip(articleRepo.countByPublished(),
-//            StringUtils.isBlank(contains)
-//                ? articleRepo.findAllByStatusPublished(pageable)
-//                .collectList()
-//                : articleRepo.findAllByStatusPublishedAndContains(contains, pageable)
-//                .collectList())
-//        .map(ArticlesResponse::fromTuple2);
-//  }
-
-//  public Mono<Article> findArticleByHru(String articleHru) {
-//    return articleRepo.findByHumanReadableUrl(articleHru);
-//  }
-
-  // Private
-
-//  public Mono<Article> authFindArticleByHruAndAuthorId(ObjectId userId, String hru) {
-//    return authArticleRepo.findByAuthorIdAndHumanReadableUrl(userId, hru);
-//  }
+  // For authenticated users
 
   public Mono<ArticleBlock> authSaveArticle(ArticleBlock articleBlockClient) {
     return authArticleBlockRepo.findById(articleBlockClient.getId())
@@ -115,26 +91,6 @@ public class ArticleBlockService {
           return articleBlockRepo.save(articleBlock);
         });
   }
-
-//  public Mono<ArticlesResponse> authFindAllByAuthor(ObjectId userId, Integer page, Integer pageSize,
-//                                                    String sort, String sortDirection,
-//                                                    String contains) {
-//    PageRequest pageable = PageRequest.of(page, pageSize, Sort.Direction.fromString(sortDirection), sort);
-//    if (StringUtils.isBlank(contains)) {
-//      return Mono.zip(authArticleRepo.countByAuthorId(userId),
-//          authArticleRepo.findAllByAuthorId(userId,
-//              pageable)
-//              .collectList())
-//          .single()
-//          .map(ArticlesResponse::fromTuple2);
-//    } else {
-//      return Mono.zip(authArticleRepo.countAllByAuthorIdAndContains(userId, contains),
-//          authArticleRepo.findAllByAuthorIdAndContains(userId, contains, pageable)
-//              .collectList())
-//          .single()
-//          .map(ArticlesResponse::fromTuple2);
-//    }
-//  }
 
   public Mono<JsonNode> authBoardCellTouch(BoardCell boardCell, ObjectId articleId) {
     return authArticleBlockRepo.findById(articleId)
@@ -163,7 +119,4 @@ public class ArticleBlockService {
     return articleBlockRepo.save(articleBlock);
   }
 
-  public Flux<ArticleBlock> findByIds(List<ObjectId> articleBlockIds) {
-    return articleBlockRepo.findAllById(articleBlockIds);
-  }
 }
