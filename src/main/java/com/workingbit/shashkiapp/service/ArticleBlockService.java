@@ -21,10 +21,9 @@
 package com.workingbit.shashkiapp.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.workingbit.shashkiapp.config.ErrorMessages;
 import com.workingbit.shashkiapp.domain.ArticleBlock;
 import com.workingbit.shashkiapp.domain.BoardCell;
-import com.workingbit.shashkiapp.domain.EnumArticleStatus;
+import com.workingbit.shashkiapp.domain.EnumArticleBlockState;
 import com.workingbit.shashkiapp.repo.ArticleBlockRepo;
 import com.workingbit.shashkiapp.repo.AuthArticleBlockRepo;
 import com.workingbit.shashkiapp.repo.AuthArticleRepo;
@@ -34,9 +33,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -103,29 +100,19 @@ public class ArticleBlockService {
 
   public Mono<ArticleBlock> authSaveArticle(ArticleBlock articleBlockClient) {
     return authArticleBlockRepo.findById(articleBlockClient.getId())
-        .flatMap(article -> {
-          if (EnumArticleStatus.REMOVED.equals(articleBlockClient.getStatus())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ErrorMessages.ARTICLE_IS_DELETED);
-          }
-          if (EnumArticleStatus.NEW.equals(article.getStatus())) {
-            article.setStatus(EnumArticleStatus.DRAFT);
-          }
+        .flatMap(articleBlock -> {
           if (StringUtils.isNotBlank(articleBlockClient.getTitle())) {
             String title = articleBlockClient.getTitle().trim();
-            article.setTitle(title);
+            articleBlock.setTitle(title);
           }
           if (StringUtils.isNotBlank(articleBlockClient.getContent())) {
             String content = articleBlockClient.getContent().trim();
-            article.setContent(content);
+            articleBlock.setContent(content);
           }
-//          if (StringUtils.isNotBlank(articleClient.getIntro())) {
-//            String intro = articleClient.getIntro().trim();
-//            article.setIntro(intro);
-//          }
-          article.setTask(articleBlockClient.isTask());
-          article.setStatus(articleBlockClient.getStatus());
-          article.setNotation(articleBlockClient.getNotation());
-          return articleBlockRepo.save(article);
+          articleBlock.setTask(articleBlockClient.isTask());
+          articleBlock.setNotation(articleBlockClient.getNotation());
+          articleBlock.setState(articleBlockClient.getState());
+          return articleBlockRepo.save(articleBlock);
         });
   }
 
@@ -149,7 +136,7 @@ public class ArticleBlockService {
 //    }
 //  }
 
-  public Mono<JsonNode> privateBoardCellTouch(BoardCell boardCell, ObjectId articleId) {
+  public Mono<JsonNode> authBoardCellTouch(BoardCell boardCell, ObjectId articleId) {
     return authArticleBlockRepo.findById(articleId)
         .flatMap(article -> {
           var gameNotationNode = JsonUtils.dataToJsonNode(article.getNotation());
@@ -162,7 +149,7 @@ public class ArticleBlockService {
   }
 
   Mono<ArticleBlock> authCreateArticleBlock(ArticleBlock articleBlock, ObjectId articleId) {
-    articleBlock.setStatus(EnumArticleStatus.NEW);
+    articleBlock.setState(EnumArticleBlockState.OPENED);
     articleBlock.setTitle(articleBlock.getTitle());
     articleBlock.setArticleId(articleId);
 

@@ -10,7 +10,7 @@ tokenIssuer: ${TOKEN_ISSUER:workingbit.com}
 tokenSecret: ${TOKEN_SECRET:S2{Ux(QSDpuF(qh_E{|T3W}w9{^rWd*tQf6()eV+}
 
 headers: Access-Control-Allow-Origin,Origin,Content-Type,Accept,Authorization,WWW-Authenticate
-methods: GET,POST,OPTIONS,PATCH,PUT
+methods: GET,POST,OPTIONS,PATCH,PUT,DELETE
 exposedHeaders: WWW-Authenticate
 originUrl: ${ORIGIN_URL:https://shashki.online}
 

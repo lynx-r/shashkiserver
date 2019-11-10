@@ -1,7 +1,7 @@
 /*
  * © Copyright
  *
- * ArticleBlock.java is part of shashkiserver.
+ * EnumArticleBlockState.java is part of shashkiserver.
  *
  * shashkiserver is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,37 +20,7 @@
 
 package com.workingbit.shashkiapp.domain;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.bson.types.ObjectId;
-import org.springframework.data.mongodb.core.mapping.Document;
-
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-
-/**
- * Created by Aleksey Popryaduhin on 18:31 09/08/2017.
- */
-@EqualsAndHashCode(callSuper = true)
-@Data
-@Document
-public class ArticleBlock extends BaseDomain {
-
-  @NotNull
-  private ObjectId articleId;
-
-  @Size(max = 200)
-  private String title;
-
-  @Size(min = 10, max = 4000)
-  private String content;
-
-  @NotNull
-  private GameNotation notation;
-
-  @NotNull
-  private EnumArticleBlockState state;
-
-  private boolean task;
-
+public enum EnumArticleBlockState {
+  OPENED,
+  CLOSED
 }

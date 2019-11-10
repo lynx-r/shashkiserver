@@ -110,7 +110,7 @@ public class AuthArticleController {
       @PathVariable ObjectId articleBlockId,
       @RequestBody BoardCell boardCell
   ) {
-    return articleBlockService.privateBoardCellTouch(boardCell, articleBlockId)
+    return articleBlockService.authBoardCellTouch(boardCell, articleBlockId)
         .map(ResponseEntity::ok);
   }
 
@@ -120,6 +120,16 @@ public class AuthArticleController {
                                                         @RequestBody Article article
   ) {
     return articleService.authFetchArticle(article, userId)
+        .map(ResponseEntity::ok);
+  }
+
+  @DeleteMapping("{articleId}/block/{articleBlockId}")
+  @PreAuthorize("hasRole('USER')")
+  public Mono<ResponseEntity<Void>> authDeleteArticleBlock(@PathVariable ObjectId userId,
+                                                           @PathVariable ObjectId articleId,
+                                                           @PathVariable ObjectId articleBlockId
+  ) {
+    return articleService.authDeleteArticleBlock(articleId, articleBlockId, userId)
         .map(ResponseEntity::ok);
   }
 }

@@ -38,6 +38,8 @@ import reactor.util.function.Tuple2;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class ArticleService {
@@ -108,10 +110,13 @@ public class ArticleService {
             String intro = articleClient.getIntro().trim();
             article.setIntro(intro);
           }
+          article.setArticleBlockIds(articleClient.getArticleBlockIds());
+          article.setSelectedArticleBlockId(articleClient.getSelectedArticleBlockId());
           article.setTask(articleClient.isTask());
           article.setStatus(articleClient.getStatus());
           return articleRepo.save(article);
-        });
+        })
+        .flatMap(this::fetchArticle);
   }
 
   public Mono<ArticlesResponse> authFindAllByAuthor(ObjectId userId, Integer page, Integer pageSize,
@@ -175,7 +180,14 @@ public class ArticleService {
   private Article fillArticle(Tuple2<Article, List<ArticleBlock>> tuple2) {
     var article = tuple2.getT1();
     var articleBlocks = tuple2.getT2();
-    article.setArticleBlocks(new LinkedList<>(articleBlocks));
+    Map<ObjectId, ArticleBlock> abMap = articleBlocks
+        .stream()
+        .collect(Collectors.toMap(ab -> ab.getId(), ab -> ab));
+    var abOrdered = article.getArticleBlockIds()
+        .stream()
+        .map(abMap::get)
+        .collect(Collectors.toCollection(LinkedList::new));
+    article.setArticleBlocks(abOrdered);
     var selABId = article.getSelectedArticleBlockId();
     articleBlocks
         .stream()
@@ -185,4 +197,16 @@ public class ArticleService {
     return article;
   }
 
+  public Mono<Void> authDeleteArticleBlock(ObjectId articleId, ObjectId articleBlockId, ObjectId userId) {
+    return authArticleRepo
+        .findByAuthorIdAndId(userId, articleId)
+        .flatMap(article -> {
+          article.getArticleBlockIds().remove(articleBlockId);
+          if (article.getSelectedArticleBlockId() != null && article.getSelectedArticleBlockId().equals(articleBlockId)) {
+            article.setSelectedArticleBlockId(null);
+          }
+          return authArticleRepo.save(article);
+        })
+        .then();
+  }
 }
