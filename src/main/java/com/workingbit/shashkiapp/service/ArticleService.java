@@ -133,7 +133,7 @@ public class ArticleService {
   public Mono<Article> authSaveArticle(ObjectId userId, Article articleClient) {
     return authArticleRepo.findByAuthorIdAndId(userId, articleClient.getId())
         .flatMap(article -> {
-          if (article.getStatus().equals(EnumArticleStatus.REMOVED)) {
+          if (EnumArticleStatus.REMOVED.equals(article.getStatus())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ErrorMessages.ARTICLE_IS_DELETED);
           }
           article.setTitle(articleClient.getTitle());
