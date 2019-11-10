@@ -56,23 +56,37 @@ public class ArticleService {
     this.authArticleRepo = authArticleRepo;
   }
 
-  public Mono<ArticleBlock> authAddArticleBlockToArticle(ObjectId articleId, ObjectId authorId,
-                                                         ArticleBlock articleBlock,
-                                                         Boolean append) {
-    return authArticleRepo.findByAuthorIdAndId(authorId, articleId)
-        .zipWhen(article -> articleBlockService.authCreateArticleBlock(articleBlock, articleId))
-        .flatMap(articleArticleTuple2 -> {
-          var article = articleArticleTuple2.getT1();
-          var articleBlockNew = articleArticleTuple2.getT2();
-          if (append) {
-            article.getArticleBlockIds().add(articleBlockNew.getId());
-          } else {
-            article.getArticleBlockIds().add(0, articleBlockNew.getId());
-          }
-          article.setSelectedArticleBlockId(articleBlockNew.getId());
-          return articleRepo.save(article).thenReturn(articleBlockNew);
-        });
+
+  // Public
+
+  public Mono<ArticlesResponse> findAllPublicArticles(Integer page,
+                                                      Integer pageSize,
+                                                      String sort,
+                                                      String sortDirection,
+                                                      String contains) {
+    PageRequest pageable = PageRequest.of(page, pageSize, Sort.Direction.fromString(sortDirection), sort);
+    return Mono
+        .zip(articleRepo.countByPublished(),
+            StringUtils.isBlank(contains)
+                ? articleRepo.findAllByStatusPublished(pageable)
+                .collectList()
+                : articleRepo.findAllByStatusPublishedAndContains(contains, pageable)
+                .collectList())
+        .map(ArticlesResponse::fromTuple2);
+
   }
+
+  public Mono<Article> findArticleByHru(String articleHru) {
+    return articleRepo.findByHumanReadableUrl(articleHru);
+  }
+
+  public Mono<Article> fetchArticle(ObjectId articleId) {
+    return articleRepo.findById(articleId)
+        .zipWhen(a -> articleBlockService.findByIds(a.getArticleBlockIds()).collectList())
+        .map(this::fillArticle);
+  }
+
+  // Authenticated
 
   public Mono<Article> authCreateArticle(ObjectId userId, ArticleCreateRequest articleCreateRequest) {
     var article = articleCreateRequest.getArticle();
@@ -98,6 +112,24 @@ public class ArticleService {
         });
   }
 
+  public Mono<ArticleBlock> authAddArticleBlockToArticle(ObjectId articleId, ObjectId authorId,
+                                                         ArticleBlock articleBlock,
+                                                         Boolean append) {
+    return authArticleRepo.findByAuthorIdAndId(authorId, articleId)
+        .zipWhen(article -> articleBlockService.authCreateArticleBlock(articleBlock, articleId))
+        .flatMap(articleArticleTuple2 -> {
+          var article = articleArticleTuple2.getT1();
+          var articleBlockNew = articleArticleTuple2.getT2();
+          if (append) {
+            article.getArticleBlockIds().add(articleBlockNew.getId());
+          } else {
+            article.getArticleBlockIds().add(0, articleBlockNew.getId());
+          }
+          article.setSelectedArticleBlockId(articleBlockNew.getId());
+          return articleRepo.save(article).thenReturn(articleBlockNew);
+        });
+  }
+
   public Mono<Article> authSaveArticle(ObjectId userId, Article articleClient) {
     return authArticleRepo.findByAuthorIdAndId(userId, articleClient.getId())
         .flatMap(article -> {
@@ -112,7 +144,8 @@ public class ArticleService {
           article.setStatus(articleClient.getStatus());
           return articleRepo.save(article);
         })
-        .flatMap(this::fetchArticle);
+        .zipWhen((article) -> articleBlockService.findByIds(article.getArticleBlockIds()).collectList())
+        .map(this::fillArticle);
   }
 
   public Mono<ArticlesResponse> authFindAllByAuthor(ObjectId userId, Integer page, Integer pageSize,
@@ -139,37 +172,23 @@ public class ArticleService {
     return authArticleRepo.findByAuthorIdAndHumanReadableUrl(userId, hru);
   }
 
-  public Mono<ArticlesResponse> findAllPublicArticles(Integer page,
-                                                      Integer pageSize,
-                                                      String sort,
-                                                      String sortDirection,
-                                                      String contains) {
-    PageRequest pageable = PageRequest.of(page, pageSize, Sort.Direction.fromString(sortDirection), sort);
-    return Mono
-        .zip(articleRepo.countByPublished(),
-            StringUtils.isBlank(contains)
-                ? articleRepo.findAllByStatusPublished(pageable)
-                .collectList()
-                : articleRepo.findAllByStatusPublishedAndContains(contains, pageable)
-                .collectList())
-        .map(ArticlesResponse::fromTuple2);
-
-  }
-
-  public Mono<Article> findArticleByHru(String articleHru) {
-    return articleRepo.findByHumanReadableUrl(articleHru);
-  }
-
-  public Mono<Article> fetchArticle(Article articleClient) {
-    return authArticleRepo.findById(articleClient.getId())
+  public Mono<Article> authFetchArticle(ObjectId articleId, ObjectId userId) {
+    return authArticleRepo.findByAuthorIdAndId(userId, articleId)
         .zipWhen(a -> articleBlockService.findByIds(a.getArticleBlockIds()).collectList())
         .map(this::fillArticle);
   }
 
-  public Mono<Article> authFetchArticle(Article articleClient, ObjectId userId) {
-    return authArticleRepo.findByAuthorIdAndId(userId, articleClient.getId())
-        .zipWhen(a -> articleBlockService.findByIds(a.getArticleBlockIds()).collectList())
-        .map(this::fillArticle);
+  public Mono<Void> authDeleteArticleBlock(ObjectId articleId, ObjectId articleBlockId, ObjectId userId) {
+    return authArticleRepo
+        .findByAuthorIdAndId(userId, articleId)
+        .flatMap(article -> {
+          article.getArticleBlockIds().remove(articleBlockId);
+          if (article.getSelectedArticleBlockId() != null && article.getSelectedArticleBlockId().equals(articleBlockId)) {
+            article.setSelectedArticleBlockId(article.getArticleBlockIds().getFirst());
+          }
+          return authArticleRepo.save(article);
+        })
+        .then();
   }
 
   @NotNull
@@ -191,18 +210,5 @@ public class ArticleService {
         .findFirst()
         .ifPresent(article::setSelectedArticleBlock);
     return article;
-  }
-
-  public Mono<Void> authDeleteArticleBlock(ObjectId articleId, ObjectId articleBlockId, ObjectId userId) {
-    return authArticleRepo
-        .findByAuthorIdAndId(userId, articleId)
-        .flatMap(article -> {
-          article.getArticleBlockIds().remove(articleBlockId);
-          if (article.getSelectedArticleBlockId() != null && article.getSelectedArticleBlockId().equals(articleBlockId)) {
-            article.setSelectedArticleBlockId(article.getArticleBlockIds().getFirst());
-          }
-          return authArticleRepo.save(article);
-        })
-        .then();
   }
 }

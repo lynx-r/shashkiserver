@@ -24,6 +24,7 @@ import com.workingbit.shashkiapp.domain.Article;
 import com.workingbit.shashkiapp.domain.ArticlesResponse;
 import com.workingbit.shashkiapp.service.ArticleBlockService;
 import com.workingbit.shashkiapp.service.ArticleService;
+import org.bson.types.ObjectId;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -61,10 +62,10 @@ public class ArticleController {
         .map(ResponseEntity::ok);
   }
 
-  @PostMapping("fetch")
+  @GetMapping("{articleId}/fetch")
   @PreAuthorize("hasRole('USER')")
-  public Mono<ResponseEntity<Article>> authFetchArticle(@RequestBody Article article) {
-    return articleService.fetchArticle(article)
+  public Mono<ResponseEntity<Article>> authFetchArticle(@PathVariable ObjectId articleId) {
+    return articleService.fetchArticle(articleId)
         .map(ResponseEntity::ok);
   }
 

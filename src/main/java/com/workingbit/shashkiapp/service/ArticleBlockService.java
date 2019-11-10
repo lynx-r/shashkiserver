@@ -26,12 +26,8 @@ import com.workingbit.shashkiapp.domain.BoardCell;
 import com.workingbit.shashkiapp.domain.EnumArticleBlockState;
 import com.workingbit.shashkiapp.repo.ArticleBlockRepo;
 import com.workingbit.shashkiapp.repo.AuthArticleBlockRepo;
-import com.workingbit.shashkiapp.repo.AuthArticleRepo;
-import com.workingbit.shashkiapp.repo.UserRepository;
 import com.workingbit.shashkiapp.util.JsonUtils;
 import org.bson.types.ObjectId;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -45,29 +41,20 @@ import java.util.List;
 @Service
 public class ArticleBlockService {
 
-  private final Logger logger = LoggerFactory.getLogger(ArticleBlockService.class);
-
-  private final AuthArticleRepo authArticleRepo;
   private final ArticleBlockRepo articleBlockRepo;
   private final AuthArticleBlockRepo authArticleBlockRepo;
-  //  private final BoardBoxService boardBoxService;
-  private final UserRepository userRepository;
 
   public ArticleBlockService(
-      AuthArticleRepo authArticleRepo,
       ArticleBlockRepo articleBlockRepo,
-      AuthArticleBlockRepo authArticleBlockRepo,
-      UserRepository userRepository
+      AuthArticleBlockRepo authArticleBlockRepo
   ) {
-    this.authArticleRepo = authArticleRepo;
     this.articleBlockRepo = articleBlockRepo;
     this.authArticleBlockRepo = authArticleBlockRepo;
-    this.userRepository = userRepository;
   }
 
   // For public users
 
-  public Flux<ArticleBlock> findByIds(List<ObjectId> articleBlockIds) {
+  Flux<ArticleBlock> findByIds(List<ObjectId> articleBlockIds) {
     return articleBlockRepo.findAllById(articleBlockIds);
   }
 

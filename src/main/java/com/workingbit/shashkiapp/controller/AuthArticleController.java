@@ -115,12 +115,12 @@ public class AuthArticleController {
         .map(ResponseEntity::ok);
   }
 
-  @PostMapping("{articleId}/fetch")
+  @GetMapping("{articleId}/fetch")
   @PreAuthorize("hasRole('USER')")
   public Mono<ResponseEntity<Article>> authFetchArticle(@PathVariable ObjectId userId,
-                                                        @RequestBody Article article
+                                                        @PathVariable ObjectId articleId
   ) {
-    return articleService.authFetchArticle(article, userId)
+    return articleService.authFetchArticle(articleId, userId)
         .map(ResponseEntity::ok);
   }
 
