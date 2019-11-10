@@ -29,7 +29,6 @@ import com.workingbit.shashkiapp.repo.AuthArticleBlockRepo;
 import com.workingbit.shashkiapp.repo.AuthArticleRepo;
 import com.workingbit.shashkiapp.repo.UserRepository;
 import com.workingbit.shashkiapp.util.JsonUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,17 +73,11 @@ public class ArticleBlockService {
 
   // For authenticated users
 
-  public Mono<ArticleBlock> authSaveArticle(ArticleBlock articleBlockClient) {
+  public Mono<ArticleBlock> authSaveArticleBlock(ArticleBlock articleBlockClient) {
     return authArticleBlockRepo.findById(articleBlockClient.getId())
         .flatMap(articleBlock -> {
-          if (StringUtils.isNotBlank(articleBlockClient.getTitle())) {
-            String title = articleBlockClient.getTitle().trim();
-            articleBlock.setTitle(title);
-          }
-          if (StringUtils.isNotBlank(articleBlockClient.getContent())) {
-            String content = articleBlockClient.getContent().trim();
-            articleBlock.setContent(content);
-          }
+          articleBlock.setTitle(articleBlockClient.getTitle());
+          articleBlock.setContent(articleBlockClient.getContent());
           articleBlock.setTask(articleBlockClient.isTask());
           articleBlock.setNotation(articleBlockClient.getNotation());
           articleBlock.setState(articleBlockClient.getState());

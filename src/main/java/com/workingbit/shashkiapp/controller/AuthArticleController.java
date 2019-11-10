@@ -79,7 +79,7 @@ public class AuthArticleController {
   @PreAuthorize("hasRole('USER')")
   public Mono<ResponseEntity<ArticleBlock>> saveArticleBlock(@RequestBody ArticleBlock articleBlock) {
     return articleBlockService
-        .authSaveArticle(articleBlock)
+        .authSaveArticleBlock(articleBlock)
         .map(ResponseEntity::ok);
   }
 

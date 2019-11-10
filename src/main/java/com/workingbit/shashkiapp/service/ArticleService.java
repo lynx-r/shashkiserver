@@ -102,14 +102,8 @@ public class ArticleService {
           if (article.getStatus().equals(EnumArticleStatus.REMOVED)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ErrorMessages.ARTICLE_IS_DELETED);
           }
-          if (StringUtils.isNotBlank(articleClient.getTitle())) {
-            String title = articleClient.getTitle().trim();
-            article.setTitle(title);
-          }
-          if (StringUtils.isNotBlank(articleClient.getIntro())) {
-            String intro = articleClient.getIntro().trim();
-            article.setIntro(intro);
-          }
+          article.setTitle(articleClient.getTitle());
+          article.setIntro(articleClient.getIntro());
           article.setArticleBlockIds(articleClient.getArticleBlockIds());
           article.setSelectedArticleBlockId(articleClient.getSelectedArticleBlockId());
           article.setTask(articleClient.isTask());
