@@ -66,8 +66,11 @@ public class ArticleBlockService {
           articleBlock.setTitle(articleBlockClient.getTitle());
           articleBlock.setContent(articleBlockClient.getContent());
           articleBlock.setTask(articleBlockClient.isTask());
-          articleBlock.setNotation(articleBlockClient.getNotation());
           articleBlock.setState(articleBlockClient.getState());
+          if (articleBlockClient.getNotation() != null) {
+            // client can send notation independently of text
+            articleBlock.setNotation(articleBlockClient.getNotation());
+          }
           return articleBlockRepo.save(articleBlock);
         });
   }
