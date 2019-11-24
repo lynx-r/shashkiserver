@@ -1,7 +1,7 @@
 /*
  * © Copyright
  *
- * ArticleBlockRepo.java is part of shashkiserver.
+ * RepoConstants.java is part of shashkiserver.
  *
  * shashkiserver is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,12 +20,11 @@
 
 package com.workingbit.shashkiapp.repo;
 
-import com.workingbit.shashkiapp.domain.ArticleBlock;
-import org.bson.types.ObjectId;
-import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
+import com.workingbit.shashkiapp.domain.EnumArticleStatus;
 
-/**
- * Created by Aleksey Popryadukhin on 27/08/2018.
- */
-public interface ArticleBlockRepo extends ReactiveMongoRepository<ArticleBlock, ObjectId> {
+import java.util.List;
+
+public class RepoConstants {
+  public static List<EnumArticleStatus> includeStatuses = List.of(EnumArticleStatus.PUBLISHED);
+  public static List<EnumArticleStatus> excludeStatuses = List.of(EnumArticleStatus.REMOVED);
 }

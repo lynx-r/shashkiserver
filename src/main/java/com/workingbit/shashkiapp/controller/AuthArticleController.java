@@ -124,6 +124,15 @@ public class AuthArticleController {
         .map(ResponseEntity::ok);
   }
 
+  @DeleteMapping("{articleId}")
+  @PreAuthorize("hasRole('USER')")
+  public Mono<ResponseEntity<Void>> deleteArticle(@PathVariable ObjectId userId,
+                                                  @PathVariable ObjectId articleId) {
+    return articleService
+        .authDeleteArticle(articleId, userId)
+        .map(ResponseEntity::ok);
+  }
+
   @DeleteMapping("{articleId}/block/{articleBlockId}")
   @PreAuthorize("hasRole('USER')")
   public Mono<ResponseEntity<Void>> authDeleteArticleBlock(@PathVariable ObjectId userId,
@@ -133,4 +142,5 @@ public class AuthArticleController {
     return articleService.authDeleteArticleBlock(articleId, articleBlockId, userId)
         .map(ResponseEntity::ok);
   }
+
 }

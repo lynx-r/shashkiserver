@@ -178,6 +178,16 @@ public class ArticleService {
         .map(this::fillArticle);
   }
 
+  public Mono<Void> authDeleteArticle(ObjectId articleId, ObjectId userId) {
+    return authArticleRepo
+        .findByAuthorIdAndId(userId, articleId)
+        .flatMap(article -> {
+          article.setStatus(EnumArticleStatus.REMOVED);
+          return authArticleRepo.save(article);
+        })
+        .then();
+  }
+
   public Mono<Void> authDeleteArticleBlock(ObjectId articleId, ObjectId articleBlockId, ObjectId userId) {
     return authArticleRepo
         .findByAuthorIdAndId(userId, articleId)

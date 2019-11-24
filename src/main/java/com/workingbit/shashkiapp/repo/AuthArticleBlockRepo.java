@@ -28,27 +28,4 @@ import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
  * Created by Aleksey Popryadukhin on 27/08/2018.
  */
 public interface AuthArticleBlockRepo extends ReactiveMongoRepository<ArticleBlock, ObjectId> {
-
-//  Mono<Article> findByAuthorIdAndHumanReadableUrl(ObjectId authorId, String hru);
-
-//  Mono<Article> findByAuthorIdAndId(ObjectId articleId, ObjectId authorId);
-
-//  Mono<Long> countByAuthorId(ObjectId authorId);
-
-//  Flux<Article> findAllByAuthorId(ObjectId authorId, Pageable pageable);
-
-//  default Flux<Article> findAllByAuthorIdAndContains(ObjectId authorId, String content, Pageable pageable) {
-//    String contentRegex = "(?i).*" + content + ".*";
-//    return findAllByAuthorIdAndIntroMatchesRegexOrAuthorIdAndTitleMatchesRegex(authorId, contentRegex, authorId, contentRegex, pageable);
-//  }
-
-//  Flux<Article> findAllByAuthorIdAndIntroMatchesRegexOrAuthorIdAndTitleMatchesRegex(ObjectId authorId, String content, ObjectId authorId2, String intro, Pageable pageable);
-
-//  default Mono<Long> countAllByAuthorIdAndContains(ObjectId authorId, String content) {
-//    String contentRegex = "(?i).*" + content + ".*";
-//    return countAllByAuthorIdAndIntroMatchesRegexOrAuthorIdAndTitleMatchesRegex(authorId, contentRegex, authorId, contentRegex);
-//  }
-
-//  Mono<Long> countAllByAuthorIdAndIntroMatchesRegexOrAuthorIdAndTitleMatchesRegex(ObjectId userId, String contains, ObjectId userId1, String contains1);
-
 }
