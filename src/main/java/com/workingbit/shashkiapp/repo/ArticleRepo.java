@@ -30,42 +30,37 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-import static com.workingbit.shashkiapp.repo.RepoConstants.excludeStatuses;
-import static com.workingbit.shashkiapp.repo.RepoConstants.includeStatuses;
+import static com.workingbit.shashkiapp.repo.RepoConstants.guestAllowedStatuses;
 
 /**
  * Created by Aleksey Popryadukhin on 27/08/2018.
  */
 public interface ArticleRepo extends ReactiveMongoRepository<Article, ObjectId> {
 
-  default Mono<Article> findByHumanReadableUrl(String hru) {
-    return findByHumanReadableUrlAndStatusNotIn(hru, excludeStatuses);
-  }
-
-  Mono<Article> findByHumanReadableUrlAndStatusNotIn(String hru, List<EnumArticleStatus> exclude);
+  Mono<Article> findByHumanReadableUrl(String hru);
 
   default Flux<Article> findAllByStatusPublished(Pageable pageable) {
-    return findAllByStatusInAndStatusNotIn(includeStatuses, excludeStatuses, pageable);
+    return findAllByStatusIn(guestAllowedStatuses, pageable);
   }
 
   default Flux<Article> findAllByStatusPublishedAndContains(String content, Pageable pageable) {
     String contentRegex = "(?i).*" + content + ".*";
-    return findAllByStatusInAndStatusNotInAndIntroMatchesRegexOrStatusInAndStatusNotInAndTitleMatchesRegex(
-        includeStatuses, excludeStatuses, contentRegex, includeStatuses, excludeStatuses,
+    return findAllByStatusInAndIntroMatchesRegexOrStatusInAndTitleMatchesRegex(
+        guestAllowedStatuses, contentRegex, guestAllowedStatuses,
         contentRegex, pageable);
   }
 
   default Mono<Long> countByPublished() {
-    return countByStatusInAndStatusNotIn(includeStatuses, excludeStatuses);
+    return countByStatusIn(guestAllowedStatuses);
   }
 
-  Mono<Long> countByStatusInAndStatusNotIn(List<EnumArticleStatus> statuses, List<EnumArticleStatus> exclude);
+  Mono<Long> countByStatusIn(List<EnumArticleStatus> statuses);
 
-  Flux<Article> findAllByStatusInAndStatusNotIn(List<EnumArticleStatus> status, List<EnumArticleStatus> exclude, Pageable pageable);
+  Flux<Article> findAllByStatusIn(List<EnumArticleStatus> status, Pageable pageable);
 
-  Flux<Article> findAllByStatusInAndStatusNotInAndIntroMatchesRegexOrStatusInAndStatusNotInAndTitleMatchesRegex(
-      List<EnumArticleStatus> status, List<EnumArticleStatus> exclude, String content,
-      List<EnumArticleStatus> status2, List<EnumArticleStatus> exclude2, String intro,
+  Flux<Article> findAllByStatusInAndIntroMatchesRegexOrStatusInAndTitleMatchesRegex(
+      List<EnumArticleStatus> status, String content,
+      List<EnumArticleStatus> status2, String intro,
       Pageable pageable);
 
 }

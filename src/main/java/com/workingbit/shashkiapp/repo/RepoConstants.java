@@ -25,6 +25,7 @@ import com.workingbit.shashkiapp.domain.EnumArticleStatus;
 import java.util.List;
 
 public class RepoConstants {
-  public static List<EnumArticleStatus> includeStatuses = List.of(EnumArticleStatus.PUBLISHED);
-  public static List<EnumArticleStatus> excludeStatuses = List.of(EnumArticleStatus.REMOVED);
+  public static List<EnumArticleStatus> guestAllowedStatuses = List.of(EnumArticleStatus.PUBLISHED);
+  public static List<EnumArticleStatus> userAllowedStatuses = List.of(EnumArticleStatus.PUBLISHED,
+      EnumArticleStatus.DRAFT, EnumArticleStatus.NEW);
 }

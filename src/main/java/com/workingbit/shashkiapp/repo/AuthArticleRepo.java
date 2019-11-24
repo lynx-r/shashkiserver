@@ -30,7 +30,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 
-import static com.workingbit.shashkiapp.repo.RepoConstants.excludeStatuses;
+import static com.workingbit.shashkiapp.repo.RepoConstants.userAllowedStatuses;
 
 /**
  * Created by Aleksey Popryadukhin on 27/08/2018.
@@ -38,55 +38,56 @@ import static com.workingbit.shashkiapp.repo.RepoConstants.excludeStatuses;
 public interface AuthArticleRepo extends ReactiveMongoRepository<Article, ObjectId> {
 
   default Mono<Boolean> existsByHumanReadableUrl(String hru) {
-    return existsByHumanReadableUrlAndStatusNotIn(hru, excludeStatuses);
+    return existsByHumanReadableUrlAndStatusIn(hru, userAllowedStatuses);
   }
 
-  Mono<Boolean> existsByHumanReadableUrlAndStatusNotIn(String hru, List<EnumArticleStatus> exclude);
+  Mono<Boolean> existsByHumanReadableUrlAndStatusIn(String hru, List<EnumArticleStatus> userStatuses);
 
   default Mono<Article> findByAuthorIdAndHumanReadableUrl(ObjectId authorId, String hru) {
-    return findByAuthorIdAndHumanReadableUrlAndStatusNotIn(authorId, hru, excludeStatuses);
+    return findByAuthorIdAndHumanReadableUrlAndStatusIn(authorId, hru, userAllowedStatuses);
   }
 
-  Mono<Article> findByAuthorIdAndHumanReadableUrlAndStatusNotIn(ObjectId authorId, String hru, List<EnumArticleStatus> exclude);
+  Mono<Article> findByAuthorIdAndHumanReadableUrlAndStatusIn(ObjectId authorId, String hru, List<EnumArticleStatus> userStatuses);
 
   default Mono<Article> findByAuthorIdAndId(ObjectId articleId, ObjectId authorId) {
-    return findByAuthorIdAndIdAndStatusNotIn(articleId, authorId, excludeStatuses);
+    return findByAuthorIdAndIdAndStatusIn(articleId, authorId, userAllowedStatuses);
   }
 
-  Mono<Article> findByAuthorIdAndIdAndStatusNotIn(ObjectId articleId, ObjectId authorId, List<EnumArticleStatus> exclude);
+  Mono<Article> findByAuthorIdAndIdAndStatusIn(ObjectId articleId, ObjectId authorId, List<EnumArticleStatus> userStatuses);
 
   default Mono<Long> countByAuthorId(ObjectId authorId) {
-    return countByAuthorIdAndStatusNotIn(authorId, excludeStatuses);
+    return countByAuthorIdAndStatusIn(authorId, userAllowedStatuses);
   }
 
-  Mono<Long> countByAuthorIdAndStatusNotIn(ObjectId authorId, List<EnumArticleStatus> exclude);
+  Mono<Long> countByAuthorIdAndStatusIn(ObjectId authorId, List<EnumArticleStatus> userStatuses);
 
   default Flux<Article> findAllByAuthorId(ObjectId authorId, Pageable pageable) {
-    return findAllByAuthorIdAndStatusNotIn(authorId, excludeStatuses, pageable);
+    return findAllByAuthorIdAndStatusIn(authorId, userAllowedStatuses, pageable);
   }
 
-  Flux<Article> findAllByAuthorIdAndStatusNotIn(ObjectId authorId, List<EnumArticleStatus> exclude, Pageable pageable);
+  Flux<Article> findAllByAuthorIdAndStatusIn(ObjectId authorId, List<EnumArticleStatus> userStatuses, Pageable pageable);
 
   default Flux<Article> findAllByAuthorIdAndContains(ObjectId authorId, String content, Pageable pageable) {
     String contentRegex = "(?i).*" + content + ".*";
-    return findAllByAuthorIdAndIntroMatchesRegexAndStatusNotInOrAuthorIdAndTitleMatchesRegexAndStatusNotIn(
-        authorId, contentRegex, excludeStatuses,
-        authorId, contentRegex, excludeStatuses, pageable);
+    return findAllByAuthorIdAndIntroMatchesRegexAndStatusInOrAuthorIdAndTitleMatchesRegexAndStatusIn(
+        authorId, contentRegex, userAllowedStatuses,
+        authorId, contentRegex, userAllowedStatuses,
+        pageable);
   }
 
-  Flux<Article> findAllByAuthorIdAndIntroMatchesRegexAndStatusNotInOrAuthorIdAndTitleMatchesRegexAndStatusNotIn(
-      ObjectId authorId, String content, List<EnumArticleStatus> exclude,
-      ObjectId authorId2, String intro, List<EnumArticleStatus> exclude2,
+  Flux<Article> findAllByAuthorIdAndIntroMatchesRegexAndStatusInOrAuthorIdAndTitleMatchesRegexAndStatusIn(
+      ObjectId authorId, String content, List<EnumArticleStatus> userStatuses,
+      ObjectId authorId2, String intro, List<EnumArticleStatus> userStatuses2,
       Pageable pageable);
 
   default Mono<Long> countAllByAuthorIdAndContains(ObjectId authorId, String content) {
     String contentRegex = "(?i).*" + content + ".*";
-    return countAllByAuthorIdAndIntroMatchesRegexAndStatusNotInOrAuthorIdAndTitleMatchesRegexAndStatusNotIn(
-        authorId, contentRegex, excludeStatuses, authorId, contentRegex, excludeStatuses);
+    return countAllByAuthorIdAndIntroMatchesRegexAndStatusInOrAuthorIdAndTitleMatchesRegexAndStatusIn(
+        authorId, contentRegex, userAllowedStatuses, authorId, contentRegex, userAllowedStatuses);
   }
 
-  Mono<Long> countAllByAuthorIdAndIntroMatchesRegexAndStatusNotInOrAuthorIdAndTitleMatchesRegexAndStatusNotIn(
-      ObjectId userId, String contains, List<EnumArticleStatus> exclude,
-      ObjectId userId1, String contains1, List<EnumArticleStatus> exclude2);
+  Mono<Long> countAllByAuthorIdAndIntroMatchesRegexAndStatusInOrAuthorIdAndTitleMatchesRegexAndStatusIn(
+      ObjectId userId, String contains, List<EnumArticleStatus> userStatuses,
+      ObjectId userId1, String contains1, List<EnumArticleStatus> userStatuses2);
 
 }
